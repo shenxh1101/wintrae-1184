@@ -1,0 +1,58 @@
+@use '@/styles/variables.scss' as *;
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  transition: all $transition-base;
+
+  &.clickable {
+    &:active {
+      opacity: 0.8;
+      transform: scale(0.95);
+    }
+  }
+}
+
+.iconWrapper {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.icon {
+  font-size: 44rpx;
+  line-height: 1;
+}
+
+.badge {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 $spacing-xs;
+  background-color: $color-error;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.badgeText {
+  font-size: 20rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.label {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}

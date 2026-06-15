@@ -1,0 +1,405 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, $color-bg-gradient-start 0%, $color-bg-gradient-end 100%);
+  padding-bottom: 160rpx;
+}
+
+.header {
+  padding: $spacing-xl $spacing-lg $spacing-lg;
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-xs;
+}
+
+.subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.section {
+  padding: 0 $spacing-lg;
+  margin-bottom: $spacing-xl;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sectionSubtitle {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  font-weight: $font-weight-regular;
+}
+
+.currentMemberCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -60rpx;
+    right: -60rpx;
+    width: 240rpx;
+    height: 240rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: $radius-round;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -80rpx;
+    left: -40rpx;
+    width: 200rpx;
+    height: 200rpx;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: $radius-round;
+  }
+}
+
+.currentMemberHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  z-index: 1;
+}
+
+.currentAvatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.currentAvatarText {
+  font-size: 48rpx;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+}
+
+.currentMemberInfo {
+  flex: 1;
+}
+
+.currentMemberName {
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-xs;
+}
+
+.currentMemberTag {
+  display: inline-block;
+  padding: 6rpx 20rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+}
+
+.currentMemberStats {
+  display: flex;
+  gap: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.statItem {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  text-align: center;
+}
+
+.statValue {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: 4rpx;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+}
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.syncCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+}
+
+.syncHeader {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.syncIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-lg;
+  background: rgba($color-primary, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+}
+
+.syncInfo {
+  flex: 1;
+}
+
+.syncTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.syncDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.syncStatus {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: rgba($color-primary, 0.05);
+  border-radius: $radius-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.syncDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  background: $color-primary;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.syncStatusText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.syncTime {
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.syncFeatures {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.syncFeatureItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-lg;
+}
+
+.syncFeatureIcon {
+  font-size: 32rpx;
+}
+
+.syncFeatureText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.emergencySection {
+  padding: 0 $spacing-lg;
+  margin-bottom: $spacing-xl;
+}
+
+.emergencyCard {
+  background: linear-gradient(135deg, $color-error 0%, #dc2626 100%);
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  color: $color-text-white;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -40rpx;
+    right: -40rpx;
+    width: 180rpx;
+    height: 180rpx;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: $radius-round;
+  }
+}
+
+.emergencyTitle {
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  margin-bottom: $spacing-sm;
+  position: relative;
+  z-index: 1;
+}
+
+.emergencyDesc {
+  font-size: $font-size-sm;
+  opacity: 0.95;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  z-index: 1;
+}
+
+.emergencyContacts {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  position: relative;
+  z-index: 1;
+}
+
+.emergencyContactItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: $radius-lg;
+}
+
+.emergencyContactAvatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.emergencyContactAvatarText {
+  font-size: 28rpx;
+  font-weight: $font-weight-bold;
+}
+
+.emergencyContactInfo {
+  flex: 1;
+}
+
+.emergencyContactName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 4rpx;
+}
+
+.emergencyContactRelation {
+  font-size: $font-size-xs;
+  opacity: 0.9;
+}
+
+.emergencyCallBtn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  background: $color-text-white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+}
+
+.inviteCard {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-xl;
+  border: 2rpx dashed $color-border;
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.inviteIcon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-lg;
+  background: rgba($color-secondary, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.inviteInfo {
+  flex: 1;
+}
+
+.inviteTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.inviteDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.inviteArrow {
+  font-size: 32rpx;
+  color: $color-text-tertiary;
+}

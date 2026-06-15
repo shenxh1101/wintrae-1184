@@ -1,0 +1,351 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+.tabs {
+  display: flex;
+  padding: $spacing-sm $page-padding;
+  gap: $spacing-sm;
+  background-color: $color-bg-page;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.tab {
+  flex: 1;
+  padding: $spacing-md $spacing-sm;
+  text-align: center;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  background-color: $color-bg-card;
+  transition: all $transition-base;
+
+  &.active {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.addSection {
+  padding: $spacing-md $page-padding;
+}
+
+.addBtn {
+  width: 100%;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  box-shadow: 0 4rpx 16rpx rgba(34, 197, 94, 0.3);
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.addIcon {
+  font-size: 36rpx;
+}
+
+.addText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.inputSection {
+  padding: 0 $page-padding $spacing-lg;
+}
+
+.inputCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.inputRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.inputGroup {
+  flex: 1;
+}
+
+.inputLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+  display: block;
+}
+
+.input {
+  width: 100%;
+  height: 88rpx;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-lg;
+  color: $color-text-primary;
+  background-color: $color-bg-page;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $color-primary;
+  }
+}
+
+.periodSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  flex-wrap: wrap;
+}
+
+.periodOption {
+  padding: $spacing-sm $spacing-lg;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-primary;
+    color: $color-text-white;
+    border-color: $color-primary;
+  }
+}
+
+.symptomSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  flex-wrap: wrap;
+}
+
+.symptomOption {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: $color-error;
+    border-color: $color-error;
+  }
+}
+
+.severitySelector {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.severityOption {
+  flex: 1;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.mild.active {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: $color-success;
+    border-color: $color-success;
+  }
+
+  &.moderate.active {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: $color-warning;
+    border-color: $color-warning;
+  }
+
+  &.severe.active {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: $color-error;
+    border-color: $color-error;
+  }
+}
+
+.textarea {
+  width: 100%;
+  min-height: 160rpx;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  background-color: $color-bg-page;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: $color-primary;
+  }
+}
+
+.submitBtn {
+  width: 100%;
+  height: $button-height-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-button;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: $spacing-lg;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+}
+
+.submitText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.historySection {
+  padding: 0 $page-padding;
+}
+
+.historyHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.historyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.historyCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.emptyState {
+  padding: $spacing-xxl 0;
+  text-align: center;
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+  display: block;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}
+
+.mealSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.mealOption {
+  flex: 1;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: rgba(139, 92, 246, 0.1);
+    color: $color-secondary;
+    border-color: $color-secondary;
+  }
+}
+
+.exerciseTypeSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  flex-wrap: wrap;
+}
+
+.exerciseTypeOption {
+  padding: $spacing-sm $spacing-md;
+  border-radius: $radius-round;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: $color-primary;
+    border-color: $color-primary;
+  }
+}
+
+.intensitySelector {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-lg;
+}
+
+.intensityOption {
+  flex: 1;
+  padding: $spacing-md;
+  border-radius: $radius-md;
+  text-align: center;
+  font-size: $font-size-sm;
+  background-color: $color-bg-hover;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.light.active {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: $color-success;
+    border-color: $color-success;
+  }
+
+  &.moderate.active {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: $color-warning;
+    border-color: $color-warning;
+  }
+
+  &.vigorous.active {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: $color-error;
+    border-color: $color-error;
+  }
+}

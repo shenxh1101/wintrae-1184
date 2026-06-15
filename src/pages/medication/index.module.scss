@@ -1,0 +1,384 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 120rpx;
+}
+
+.header {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  padding: $spacing-xl $page-padding $spacing-xxl;
+  color: $color-text-white;
+  border-radius: 0 0 $radius-xl $radius-xl;
+  margin-bottom: -$spacing-xl;
+}
+
+.headerTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  margin-bottom: $spacing-xs;
+}
+
+.headerSubtitle {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+}
+
+.progressCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  margin: 0 $page-padding $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.progressHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.progressTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.progressText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.progressBar {
+  height: 20rpx;
+  background-color: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  transition: width 0.5s ease;
+}
+
+.progressDetail {
+  display: flex;
+  justify-content: space-between;
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.section {
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-lg;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.medicationList {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.medicationCard {
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  padding: $spacing-lg;
+  box-shadow: $shadow-card;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.medicationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+}
+
+.medicationName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.medicationStatus {
+  padding: $spacing-xs $spacing-sm;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+
+  &.active {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: $color-success;
+  }
+
+  &.inactive {
+    background-color: rgba(148, 163, 184, 0.1);
+    color: $color-text-tertiary;
+  }
+}
+
+.medicationInfo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.infoTag {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-sm;
+  background-color: $color-bg-hover;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.infoLabel {
+  color: $color-text-tertiary;
+}
+
+.dateRange {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.timesSection {
+  margin-bottom: $spacing-md;
+}
+
+.timesLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.timesList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.timeItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm $spacing-md;
+  background-color: $color-bg-hover;
+  border-radius: $radius-round;
+  transition: all $transition-base;
+
+  &.taken {
+    background-color: rgba(34, 197, 94, 0.1);
+  }
+}
+
+.timeCheckbox {
+  width: 36rpx;
+  height: 36rpx;
+  border: 2rpx solid $color-text-tertiary;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  .taken & {
+    background-color: $color-success;
+    border-color: $color-success;
+  }
+}
+
+.checkIcon {
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+}
+
+.timeText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+
+  .taken & {
+    color: $color-success;
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+}
+
+.medicationNote {
+  padding: $spacing-sm $spacing-md;
+  background-color: rgba(251, 191, 36, 0.1);
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  color: #92400e;
+  margin-bottom: $spacing-md;
+}
+
+.medicationActions {
+  display: flex;
+  gap: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.actionBtn {
+  flex: 1;
+  height: $button-height-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-xs;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-base;
+
+  &:active {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+.editBtn {
+  background-color: rgba(59, 130, 246, 0.1);
+  color: $color-primary;
+}
+
+.deleteBtn {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: $color-error;
+}
+
+.reminderToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-md;
+  background-color: $color-bg-card;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-lg;
+}
+
+.reminderInfo {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.reminderIcon {
+  font-size: 40rpx;
+}
+
+.reminderText {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.toggleSwitch {
+  width: 88rpx;
+  height: 48rpx;
+  border-radius: $radius-round;
+  background-color: $color-bg-hover;
+  position: relative;
+  transition: all $transition-base;
+
+  &.active {
+    background-color: $color-success;
+  }
+}
+
+.toggleKnob {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background-color: $color-text-white;
+  border-radius: 50%;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.2);
+  transition: all $transition-base;
+
+  .active & {
+    transform: translateX(40rpx);
+  }
+}
+
+.addBtn {
+  position: fixed;
+  bottom: 48rpx;
+  right: 48rpx;
+  width: 112rpx;
+  height: 112rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  transition: all $transition-base;
+  z-index: 100;
+
+  &:active {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+}
+
+.addBtnIcon {
+  font-size: 56rpx;
+  color: $color-text-white;
+  font-weight: $font-weight-light;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-xxl * 2 $page-padding;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  text-align: center;
+}

@@ -1,0 +1,108 @@
+@use '@/styles/variables.scss' as *;
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-lg;
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  border: 3rpx solid transparent;
+  transition: all $transition-base;
+
+  &.clickable {
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.99);
+    }
+  }
+
+  &.selected {
+    border-width: 3rpx;
+    border-style: solid;
+  }
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatarText {
+  font-size: 40rpx;
+  font-weight: $font-weight-semibold;
+}
+
+.emergencyBadge {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  width: 40rpx;
+  height: 40rpx;
+  background-color: $color-bg-card;
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.emergencyIcon {
+  font-size: 24rpx;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-xs;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.roleTag {
+  font-size: $font-size-xs;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+}
+
+.phone {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.callBtn {
+  width: 80rpx;
+  height: 80rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+.callIcon {
+  font-size: 36rpx;
+}

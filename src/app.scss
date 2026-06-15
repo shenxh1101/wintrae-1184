@@ -1,0 +1,91 @@
+@use '@/styles/compat.scss';
+@use '@/styles/variables.scss' as *;
+
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
+    sans-serif;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-text-primary;
+  background: linear-gradient(180deg, $color-bg-gradient-start 0%, $color-bg-gradient-end 100%);
+  min-height: 100vh;
+}
+
+.pageContainer {
+  padding: 0 $page-padding;
+  max-width: $max-content-width;
+  margin: 0 auto;
+}
+
+.card {
+  background-color: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.textPrimary {
+  color: $color-text-primary;
+}
+
+.textSecondary {
+  color: $color-text-secondary;
+}
+
+.textTertiary {
+  color: $color-text-tertiary;
+}
+
+.textSuccess {
+  color: $color-success;
+}
+
+.textWarning {
+  color: $color-warning;
+}
+
+.textError {
+  color: $color-error;
+}
+
+.bgPrimary {
+  background-color: $color-primary;
+}
+
+.bgSuccess {
+  background-color: $color-success;
+}
+
+.bgWarning {
+  background-color: $color-warning;
+}
+
+.bgError {
+  background-color: $color-error;
+}
+
+.flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flexBetween {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mtSm { margin-top: $spacing-sm; }
+.mtMd { margin-top: $spacing-md; }
+.mtLg { margin-top: $spacing-lg; }
+.mbSm { margin-bottom: $spacing-sm; }
+.mbMd { margin-bottom: $spacing-md; }
+.mbLg { margin-bottom: $spacing-lg; }
