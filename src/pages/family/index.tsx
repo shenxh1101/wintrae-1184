@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'
 import { View, Text, ScrollView } from '@tarojs/components'
 import Taro from '@tarojs/taro'
+import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useHealthStore } from '@/store/healthStore'
 import MemberCard from '@/components/MemberCard'
@@ -15,6 +16,8 @@ const FamilyPage: React.FC = () => {
     bloodPressureRecords,
     bloodSugarRecords,
     reminders,
+    symptomRecords,
+    weeklyReports,
     setCurrentMember
   } = useHealthStore()
 
@@ -29,6 +32,14 @@ const FamilyPage: React.FC = () => {
   const currentReminderList = useMemo(
     () => reminders.filter((r) => r.memberId === currentMemberId && r.active !== false),
     [reminders, currentMemberId]
+  )
+  const currentSymptoms = useMemo(
+    () => symptomRecords.filter((r) => r.memberId === currentMemberId),
+    [symptomRecords, currentMemberId]
+  )
+  const currentWeeklyReports = useMemo(
+    () => weeklyReports.filter((w) => w.memberId === currentMemberId),
+    [weeklyReports, currentMemberId]
   )
 
   const currentMember = useMemo(
@@ -68,6 +79,44 @@ const FamilyPage: React.FC = () => {
 
     return { bpAvg, bsAvg, abnormalCount, pendingReminders }
   }, [currentBP, currentBS, currentReminderList])
+
+  const bpAvg = useMemo(() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const weekStr = weekAgo.toISOString().split('T')[0]
+    const records = currentBP.filter((r) => r.time >= weekStr)
+    if (records.length === 0) return { systolic: 0, diastolic: 0 }
+    return {
+      systolic: Math.round(records.reduce((s, r) => s + r.systolic, 0) / records.length),
+      diastolic: Math.round(records.reduce((s, r) => s + r.diastolic, 0) / records.length)
+    }
+  }, [currentBP])
+
+  const bsAvg = useMemo(() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const weekStr = weekAgo.toISOString().split('T')[0]
+    const records = currentBS.filter((r) => r.time >= weekStr)
+    if (records.length === 0) return 0
+    return (records.reduce((s, r) => s + r.value, 0) / records.length).toFixed(1)
+  }, [currentBS])
+
+  const abnormalCount = useMemo(() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const weekStr = weekAgo.toISOString().split('T')[0]
+    return [
+      ...currentBP.filter((r) => r.time >= weekStr && r.status !== 'normal'),
+      ...currentBS.filter((r) => r.time >= weekStr && r.status !== 'normal')
+    ].length
+  }, [currentBP, currentBS])
+
+  const symptomCount = useMemo(() => {
+    const weekAgo = new Date()
+    weekAgo.setDate(weekAgo.getDate() - 7)
+    const weekStr = weekAgo.toISOString().split('T')[0]
+    return currentSymptoms.filter((r) => r.time >= weekStr).length
+  }, [currentSymptoms])
 
   const getOverallStatus = (): { text: string; status: HealthStatus } => {
     if (memberStats.abnormalCount > 3) return { text: '需关注', status: 'danger' }
@@ -187,6 +236,48 @@ const FamilyPage: React.FC = () => {
             ))}
           </View>
         )}
+      </View>
+
+      <View className={styles.section}>
+        <View className={styles.sectionHeader}>
+          <Text className={styles.sectionTitle}>本周健康概览</Text>
+        </View>
+        <View className={styles.weeklyCard}>
+          <View className={styles.weeklyRow}>
+            <View className={styles.weeklyItem}>
+              <Text className={styles.weeklyLabel}>血压均值</Text>
+              <Text className={styles.weeklyValue}>
+                {bpAvg.systolic > 0 ? `${bpAvg.systolic}/${bpAvg.diastolic}` : '--/--'}
+                <Text className={styles.weeklyUnit}> mmHg</Text>
+              </Text>
+            </View>
+            <View className={styles.weeklyItem}>
+              <Text className={styles.weeklyLabel}>血糖均值</Text>
+              <Text className={styles.weeklyValue}>
+                {bsAvg > 0 ? bsAvg : '--'}
+                <Text className={styles.weeklyUnit}> mmol/L</Text>
+              </Text>
+            </View>
+          </View>
+          <View className={styles.weeklyRow}>
+            <View className={styles.weeklyItem}>
+              <Text className={styles.weeklyLabel}>异常次数</Text>
+              <Text className={classnames(styles.weeklyValue, abnormalCount > 0 && styles.danger)}>
+                {abnormalCount}
+              </Text>
+            </View>
+            <View className={styles.weeklyItem}>
+              <Text className={styles.weeklyLabel}>症状打卡</Text>
+              <Text className={styles.weeklyValue}>{symptomCount} 次</Text>
+            </View>
+          </View>
+          {currentWeeklyReports.length > 0 && (
+            <View className={styles.weeklySummary}>
+              <Text className={styles.weeklySummaryLabel}>医生点评</Text>
+              <Text className={styles.weeklySummaryText}>{currentWeeklyReports[0].summary}</Text>
+            </View>
+          )}
+        </View>
       </View>
 
       <View className={styles.section}>

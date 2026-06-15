@@ -75,17 +75,41 @@ export const mockReminders: Reminder[] = [
     id: 'rem4',
     memberId: 'm1',
     type: 'measure',
-    title: '测量血压',
+    title: '测量血压（早）',
     time: '2026-06-15 08:00',
     completed: true
   },
   {
-    id: 'rem5',
+    id: 'rem_measure_bs_fasting',
     memberId: 'm1',
     type: 'measure',
     title: '测量血糖（空腹）',
     time: '2026-06-15 07:30',
     completed: true
+  },
+  {
+    id: 'rem_measure_bs_afterBreakfast',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（早餐后）',
+    time: '2026-06-15 09:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_afterLunch',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（午餐后）',
+    time: '2026-06-15 13:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_beforeSleep',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（睡前）',
+    time: '2026-06-15 22:00',
+    completed: false
   },
   {
     id: 'rem6',
@@ -118,7 +142,7 @@ export const mockReminders: Reminder[] = [
     id: 'rem9',
     memberId: 'm1',
     type: 'measure',
-    title: '测量血压',
+    title: '测量血压（晚）',
     time: '2026-06-15 20:00',
     completed: false
   },
@@ -156,5 +180,149 @@ export const mockReminders: Reminder[] = [
     time: '2026-06-15 08:00',
     completed: false,
     relatedId: 'med2'
+  },
+  {
+    id: 'rem_measure_bp_m2_morning',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血压（早）',
+    time: '2026-06-15 08:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bp_m2_night',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血压（晚）',
+    time: '2026-06-15 20:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_fasting',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（空腹）',
+    time: '2026-06-15 07:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_afterBreakfast',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（早餐后）',
+    time: '2026-06-15 09:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_afterLunch',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（午餐后）',
+    time: '2026-06-15 13:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_beforeSleep',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（睡前）',
+    time: '2026-06-15 22:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bp_m1_morning_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血压（早）',
+    time: '2026-06-16 08:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bp_m1_night_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血压（晚）',
+    time: '2026-06-16 20:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m1_fasting_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（空腹）',
+    time: '2026-06-16 07:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m1_afterBreakfast_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（早餐后）',
+    time: '2026-06-16 09:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m1_afterLunch_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（午餐后）',
+    time: '2026-06-16 13:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m1_beforeSleep_tomorrow',
+    memberId: 'm1',
+    type: 'measure',
+    title: '测量血糖（睡前）',
+    time: '2026-06-16 22:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bp_m2_morning_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血压（早）',
+    time: '2026-06-16 08:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bp_m2_night_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血压（晚）',
+    time: '2026-06-16 20:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_fasting_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（空腹）',
+    time: '2026-06-16 07:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_afterBreakfast_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（早餐后）',
+    time: '2026-06-16 09:30',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_afterLunch_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（午餐后）',
+    time: '2026-06-16 13:00',
+    completed: false
+  },
+  {
+    id: 'rem_measure_bs_m2_beforeSleep_tomorrow',
+    memberId: 'm2',
+    type: 'measure',
+    title: '测量血糖（睡前）',
+    time: '2026-06-16 22:00',
+    completed: false
   }
 ]

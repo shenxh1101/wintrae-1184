@@ -8,9 +8,10 @@ import TrendChart from '@/components/TrendChart'
 import StatusBadge from '@/components/StatusBadge'
 import { formatDate, formatTime } from '@/utils/dateUtils'
 import { calculateAverage } from '@/utils/healthUtils'
+import type { TrendDataPoint } from '@/types'
 
 const BloodPressurePage: React.FC = () => {
-  const { bloodPressureRecords: rawRecords, currentMemberId, bloodPressureTrend, deleteBloodPressure } = useHealthStore()
+  const { bloodPressureRecords: rawRecords, currentMemberId, deleteBloodPressure } = useHealthStore()
 
   const bloodPressureRecords = useMemo(
     () => rawRecords.filter((r) => r.memberId === currentMemberId),
@@ -49,6 +50,35 @@ const BloodPressurePage: React.FC = () => {
       abnormalCount: recent7Days.filter((r) => r.status !== 'normal').length
     }
   }, [recent7Days])
+
+  const bpTrendData: TrendDataPoint[] = useMemo(() => {
+    const days: TrendDataPoint[] = []
+    const today = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayRecords = bloodPressureRecords.filter((r) => r.time.startsWith(dateStr))
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      if (dayRecords.length > 0) {
+        const systolicAvg = Math.round(dayRecords.reduce((s, r) => s + r.systolic, 0) / dayRecords.length)
+        const diastolicAvg = Math.round(dayRecords.reduce((s, r) => s + r.diastolic, 0) / dayRecords.length)
+        days.push({ date: label, value: systolicAvg, value2: diastolicAvg })
+      } else {
+        const prevData = days.filter((d) => d.value > 0)
+        const lastValue = prevData.length > 0 ? prevData[prevData.length - 1].value : 0
+        const lastValue2 = prevData.length > 0 ? (prevData[prevData.length - 1].value2 || 0) : 0
+        if (lastValue > 0) {
+          days.push({ date: label, value: lastValue, value2: lastValue2 })
+        } else {
+          days.push({ date: label, value: 0, value2: 0 })
+        }
+      }
+    }
+    const hasData = days.filter((d) => d.value > 0)
+    if (hasData.length === 0) return []
+    return days
+  }, [bloodPressureRecords])
 
   const handleDelete = (id: string, e: any) => {
     e.stopPropagation()
@@ -122,7 +152,7 @@ const BloodPressurePage: React.FC = () => {
         </View>
         <View className={styles.trendCard}>
           <TrendChart
-            data={bloodPressureTrend}
+            data={bpTrendData}
             color='#3b82f6'
             color2='#60a5fa'
             showLegend

@@ -158,23 +158,29 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       memberId: get().currentMemberId
     }
     const today = new Date().toISOString().split('T')[0]
+    const recordHour = parseInt(record.time.split(' ')[1]?.split(':')[0] || '0', 10)
+    // 血压时段：06-12早，18-24晚
+    let periodKey = ''
+    if (recordHour >= 6 && recordHour < 12) periodKey = '早'
+    else if (recordHour >= 18 && recordHour <= 24) periodKey = '晚'
+
     set((state) => ({
       bloodPressureRecords: [newRecord, ...state.bloodPressureRecords],
       reminders: state.reminders.map((r) => {
-        if (
+        const isMatch = (
           r.memberId === get().currentMemberId &&
           r.type === 'measure' &&
           r.title.includes('血压') &&
           r.time.startsWith(today) &&
           !r.completed &&
-          r.active !== false
-        ) {
-          return { ...r, completed: true }
-        }
-        return r
+          r.active !== false &&
+          // 如果有时段信息就按时段匹配，否则匹配第一条未完成的
+          (periodKey ? r.title.includes(periodKey) : true)
+        )
+        return isMatch ? { ...r, completed: true } : r
       })
     }))
-    console.log('[HealthStore] 新增血压记录，同步完成测量提醒', newRecord.id)
+    console.log('[HealthStore] 新增血压记录，同步完成测量提醒（时段：' + periodKey + '）', newRecord.id)
   },
 
   addBloodSugar: (record) => {
@@ -184,23 +190,32 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       memberId: get().currentMemberId
     }
     const today = new Date().toISOString().split('T')[0]
+    // period 到提醒 title 关键词的映射
+    const periodKeywordMap: Record<string, string> = {
+      fasting: '空腹',
+      afterMeal: '餐后',
+      beforeMeal: '餐前',
+      beforeSleep: '睡前'
+    }
+    const keyword = periodKeywordMap[record.period] || ''
+
     set((state) => ({
       bloodSugarRecords: [newRecord, ...state.bloodSugarRecords],
       reminders: state.reminders.map((r) => {
-        if (
+        const isMatch = (
           r.memberId === get().currentMemberId &&
           r.type === 'measure' &&
           r.title.includes('血糖') &&
           r.time.startsWith(today) &&
           !r.completed &&
-          r.active !== false
-        ) {
-          return { ...r, completed: true }
-        }
-        return r
+          r.active !== false &&
+          // 如果有关键词就按关键词匹配，否则匹配第一条未完成的
+          (keyword ? r.title.includes(keyword) : true)
+        )
+        return isMatch ? { ...r, completed: true } : r
       })
     }))
-    console.log('[HealthStore] 新增血糖记录，同步完成测量提醒', newRecord.id)
+    console.log('[HealthStore] 新增血糖记录，同步完成测量提醒（时段：' + keyword + '）', newRecord.id)
   },
 
   addSymptom: (record) => {
@@ -259,30 +274,37 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       id: newId,
       memberId
     }
-
+    
+    // 同时创建3天（今天、明天、后天）的用药提醒
     const newReminders: Reminder[] = []
     if (record.reminder && record.times && record.times.length > 0) {
-      const today = new Date().toISOString().split('T')[0]
-      record.times.forEach((time, index) => {
-        newReminders.push({
-          id: `rem_${Date.now()}_${index}`,
-          memberId,
-          type: 'medication',
-          title: `${record.name} ${record.dosage}`,
-          time: `${today} ${time}`,
-          completed: false,
-          relatedId: newId,
-          note: record.note ? `剂量：${record.dosage}` : undefined
+      const baseDate = new Date()
+      for (let dayOffset = 0; dayOffset < 3; dayOffset++) {
+        const date = new Date(baseDate)
+        date.setDate(date.getDate() + dayOffset)
+        const dateStr = date.toISOString().split('T')[0]
+        record.times.forEach((time, timeIdx) => {
+          newReminders.push({
+            id: `rem_${Date.now()}_d${dayOffset}_t${timeIdx}`,
+            memberId,
+            type: 'medication',
+            title: `${record.name} ${record.dosage}`,
+            time: `${dateStr} ${time}`,
+            completed: false,
+            active: true,
+            relatedId: newId,
+            note: record.note ? `剂量：${record.dosage}` : undefined
+          })
         })
-      })
+      }
     }
-
+    
     set((state) => ({
       medications: [...state.medications, newMed],
       reminders: [...state.reminders, ...newReminders].sort((a, b) => a.time.localeCompare(b.time))
     }))
-
-    console.log('[HealthStore] 新增用药', newMed.name, '及', newReminders.length, '条提醒')
+    
+    console.log('[HealthStore] 新增用药', newMed.name, '及', newReminders.length, '条提醒（3天铺开）')
   },
 
   submitFollowup: (id, answers) => {
@@ -325,8 +347,10 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       reminders: state.reminders.map((r) => {
         if (r.relatedId === id) {
           if (newReminderState) {
+            // 重新开启：批量恢复所有关联提醒
             return { ...r, completed: false, active: true }
           } else {
+            // 关闭提醒：批量标记所有关联提醒为 inactive
             return { ...r, active: false }
           }
         }
@@ -334,7 +358,7 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       })
     }))
 
-    console.log('[HealthStore] 切换用药提醒开关', id, newReminderState)
+    console.log('[HealthStore] 批量切换用药提醒开关', id, newReminderState)
   },
 
   deleteMedication: (id) => {
@@ -351,28 +375,37 @@ export const useHealthStore = create<HealthState>((set, get) => ({
     const today = new Date().toISOString().split('T')[0]
     const isTodayRecord = record.time.startsWith(today)
     const memberId = record.memberId
-    const hasOtherTodayBP = get().bloodPressureRecords.some(
-      (r) => r.id !== id && r.memberId === memberId && r.time.startsWith(today)
-    )
+    const recordHour = parseInt(record.time.split(' ')[1]?.split(':')[0] || '0', 10)
+    let periodKey = ''
+    if (recordHour >= 6 && recordHour < 12) periodKey = '早'
+    else if (recordHour >= 18 && recordHour <= 24) periodKey = '晚'
+    // 判断删除后该成员今天还有没有相同时段的血压记录
+    const hasOtherSamePeriod = get().bloodPressureRecords.some((r) => {
+      if (r.id === id || r.memberId !== memberId || !r.time.startsWith(today)) return false
+      const h = parseInt(r.time.split(' ')[1]?.split(':')[0] || '0', 10)
+      if (periodKey === '早') return h >= 6 && h < 12
+      if (periodKey === '晚') return h >= 18 && h <= 24
+      return false // 其他时段不处理
+    })
+
     set((state) => ({
       bloodPressureRecords: state.bloodPressureRecords.filter((r) => r.id !== id),
-      reminders: isTodayRecord && !hasOtherTodayBP
+      reminders: isTodayRecord && !hasOtherSamePeriod && periodKey
         ? state.reminders.map((r) => {
-            if (
+            const shouldRestore = (
               r.memberId === memberId &&
               r.type === 'measure' &&
               r.title.includes('血压') &&
+              r.title.includes(periodKey) &&
               r.time.startsWith(today) &&
               r.completed &&
               r.active !== false
-            ) {
-              return { ...r, completed: false }
-            }
-            return r
+            )
+            return shouldRestore ? { ...r, completed: false } : r
           })
         : state.reminders
     }))
-    console.log('[HealthStore] 删除血压记录', id)
+    console.log('[HealthStore] 删除血压记录，按时段回算提醒', id)
   },
 
   deleteBloodSugar: (id) => {
@@ -381,28 +414,36 @@ export const useHealthStore = create<HealthState>((set, get) => ({
     const today = new Date().toISOString().split('T')[0]
     const isTodayRecord = record.time.startsWith(today)
     const memberId = record.memberId
-    const hasOtherTodayBS = get().bloodSugarRecords.some(
-      (r) => r.id !== id && r.memberId === memberId && r.time.startsWith(today)
+    const periodKeywordMap: Record<string, string> = {
+      fasting: '空腹',
+      afterMeal: '餐后',
+      beforeMeal: '餐前',
+      beforeSleep: '睡前'
+    }
+    const keyword = periodKeywordMap[record.period] || ''
+    // 判断删除后该成员今天还有没有相同 period 的血糖记录
+    const hasOtherSamePeriod = get().bloodSugarRecords.some(
+      (r) => r.id !== id && r.memberId === memberId && r.time.startsWith(today) && r.period === record.period
     )
+
     set((state) => ({
       bloodSugarRecords: state.bloodSugarRecords.filter((r) => r.id !== id),
-      reminders: isTodayRecord && !hasOtherTodayBS
+      reminders: isTodayRecord && !hasOtherSamePeriod && keyword
         ? state.reminders.map((r) => {
-            if (
+            const shouldRestore = (
               r.memberId === memberId &&
               r.type === 'measure' &&
               r.title.includes('血糖') &&
+              r.title.includes(keyword) &&
               r.time.startsWith(today) &&
               r.completed &&
               r.active !== false
-            ) {
-              return { ...r, completed: false }
-            }
-            return r
+            )
+            return shouldRestore ? { ...r, completed: false } : r
           })
         : state.reminders
     }))
-    console.log('[HealthStore] 删除血糖记录', id)
+    console.log('[HealthStore] 删除血糖记录，按时段回算提醒', id)
   },
 
   getHealthOverview: () => {

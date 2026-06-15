@@ -24,8 +24,6 @@ const HomePage: React.FC = () => {
     reminders,
     doctorAdvices,
     medications,
-    bloodPressureTrend,
-    bloodSugarTrend,
     toggleReminder,
     setCurrentMember,
     setRecordInitialTab
@@ -70,6 +68,62 @@ const HomePage: React.FC = () => {
     () => exerciseRecords.filter((r) => r.memberId === currentMemberId),
     [exerciseRecords, currentMemberId]
   )
+
+  const bpTrendData: TrendDataPoint[] = useMemo(() => {
+    const days: TrendDataPoint[] = []
+    const today = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayRecords = currentBP.filter((r) => r.time.startsWith(dateStr))
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      if (dayRecords.length > 0) {
+        const systolicAvg = Math.round(dayRecords.reduce((s, r) => s + r.systolic, 0) / dayRecords.length)
+        const diastolicAvg = Math.round(dayRecords.reduce((s, r) => s + r.diastolic, 0) / dayRecords.length)
+        days.push({ date: label, value: systolicAvg, value2: diastolicAvg })
+      } else {
+        const prevData = days.filter((d) => d.value > 0)
+        const lastValue = prevData.length > 0 ? prevData[prevData.length - 1].value : 0
+        const lastValue2 = prevData.length > 0 ? (prevData[prevData.length - 1].value2 || 0) : 0
+        if (lastValue > 0) {
+          days.push({ date: label, value: lastValue, value2: lastValue2 })
+        } else {
+          days.push({ date: label, value: 0, value2: 0 })
+        }
+      }
+    }
+    const hasData = days.filter((d) => d.value > 0)
+    if (hasData.length === 0) return []
+    return days
+  }, [currentBP])
+
+  const bsTrendData: TrendDataPoint[] = useMemo(() => {
+    const days: TrendDataPoint[] = []
+    const today = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayRecords = currentBS.filter((r) => r.time.startsWith(dateStr))
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      if (dayRecords.length > 0) {
+        const avg = parseFloat((dayRecords.reduce((s, r) => s + r.value, 0) / dayRecords.length).toFixed(1))
+        days.push({ date: label, value: avg })
+      } else {
+        const prevData = days.filter((d) => d.value > 0)
+        const lastValue = prevData.length > 0 ? prevData[prevData.length - 1].value : 0
+        if (lastValue > 0) {
+          days.push({ date: label, value: lastValue })
+        } else {
+          days.push({ date: label, value: 0 })
+        }
+      }
+    }
+    const hasData = days.filter((d) => d.value > 0)
+    if (hasData.length === 0) return []
+    return days
+  }, [currentBS])
 
   const todayReminders = useMemo(
     () => currentReminderList.filter((r) => isToday(r.time)).slice(0, 3),
@@ -194,7 +248,7 @@ const HomePage: React.FC = () => {
     { icon: '🚨', label: '紧急', key: 'emergency', color: '#ef4444', badge: 'SOS' }
   ]
 
-  const trendData: TrendDataPoint[] = trendType === 'bp' ? bloodPressureTrend : bloodSugarTrend
+  const trendData: TrendDataPoint[] = trendType === 'bp' ? bpTrendData : bsTrendData
 
   const healthOverview = useMemo(() => {
     const today = new Date().toISOString().split('T')[0]

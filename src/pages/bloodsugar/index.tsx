@@ -8,7 +8,7 @@ import TrendChart from '@/components/TrendChart'
 import StatusBadge from '@/components/StatusBadge'
 import { formatDate, formatTime, getRelativeDateText } from '@/utils/dateUtils'
 import { getSugarPeriodText, calculateAverage } from '@/utils/healthUtils'
-import type { BloodSugarRecord } from '@/types'
+import type { BloodSugarRecord, TrendDataPoint } from '@/types'
 
 const periodFilters = [
   { key: 'all', label: '全部' },
@@ -26,7 +26,7 @@ const periodIcons: Record<string, string> = {
 }
 
 const BloodSugarPage: React.FC = () => {
-  const { bloodSugarRecords: rawRecords, currentMemberId, bloodSugarTrend, addBloodSugar, deleteBloodSugar, setRecordInitialTab } = useHealthStore()
+  const { bloodSugarRecords: rawRecords, currentMemberId, addBloodSugar, deleteBloodSugar, setRecordInitialTab } = useHealthStore()
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('all')
 
@@ -62,6 +62,33 @@ const BloodSugarPage: React.FC = () => {
       min: Math.min(...values),
       abnormalCount
     }
+  }, [bloodSugarRecords])
+
+  const bsTrendData: TrendDataPoint[] = useMemo(() => {
+    const days: TrendDataPoint[] = []
+    const today = new Date()
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today)
+      date.setDate(date.getDate() - i)
+      const dateStr = date.toISOString().split('T')[0]
+      const dayRecords = bloodSugarRecords.filter((r) => r.time.startsWith(dateStr))
+      const label = `${date.getMonth() + 1}/${date.getDate()}`
+      if (dayRecords.length > 0) {
+        const avg = parseFloat((dayRecords.reduce((s, r) => s + r.value, 0) / dayRecords.length).toFixed(1))
+        days.push({ date: label, value: avg })
+      } else {
+        const prevData = days.filter((d) => d.value > 0)
+        const lastValue = prevData.length > 0 ? prevData[prevData.length - 1].value : 0
+        if (lastValue > 0) {
+          days.push({ date: label, value: lastValue })
+        } else {
+          days.push({ date: label, value: 0 })
+        }
+      }
+    }
+    const hasData = days.filter((d) => d.value > 0)
+    if (hasData.length === 0) return []
+    return days
   }, [bloodSugarRecords])
 
   const handleAddRecord = () => {
@@ -180,7 +207,7 @@ const BloodSugarPage: React.FC = () => {
 
         <View className={styles.trendCard}>
           <TrendChart
-            data={bloodSugarTrend}
+            data={bsTrendData}
             color='#f59e0b'
             unit=' mmol/L'
           />

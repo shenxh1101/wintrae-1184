@@ -403,3 +403,75 @@
   font-size: 32rpx;
   color: $color-text-tertiary;
 }
+
+.sectionHeader {
+  margin-bottom: $spacing-md;
+}
+
+.weeklyCard {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-radius: 24px;
+  padding: 32px;
+  border: 2px solid #dcfce7;
+}
+
+.weeklyRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  &:last-child { margin-bottom: 0; }
+}
+
+.weeklyItem {
+  flex: 1;
+  text-align: center;
+  &:first-child {
+    border-right: 2px solid #dcfce7;
+  }
+}
+
+.weeklyLabel {
+  font-size: 26px;
+  color: #64748b;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.weeklyValue {
+  font-size: 44px;
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+}
+
+.weeklyUnit {
+  font-size: 22px;
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 4px;
+}
+
+.danger {
+  color: #ef4444 !important;
+}
+
+.weeklySummary {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 2px dashed #dcfce7;
+}
+
+.weeklySummaryLabel {
+  font-size: 26px;
+  color: #22c55e;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.weeklySummaryText {
+  font-size: 28px;
+  color: #334155;
+  line-height: 1.6;
+  display: block;
+}
