@@ -73,6 +73,7 @@ export interface Reminder {
   title: string
   time: string
   completed: boolean
+  active?: boolean
   relatedId?: string
   note?: string
 }

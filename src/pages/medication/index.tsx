@@ -36,7 +36,7 @@ const MedicationPage: React.FC = () => {
     [rawMedications, currentMemberId]
   )
   const reminders = useMemo(
-    () => rawReminders.filter((r) => r.memberId === currentMemberId),
+    () => rawReminders.filter((r) => r.memberId === currentMemberId && r.active !== false),
     [rawReminders, currentMemberId]
   )
 

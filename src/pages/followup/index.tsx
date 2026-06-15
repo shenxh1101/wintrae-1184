@@ -13,9 +13,22 @@ const tabs = [
 ]
 
 const FollowupPage: React.FC = () => {
-  const { currentFollowups, currentWeeklyReports, currentDoctorAdvices } = useHealthStore()
+  const { followups: rawFollowups, weeklyReports: rawWeeklyReports, doctorAdvices: rawDoctorAdvices, currentMemberId } = useHealthStore()
   const [activeTab, setActiveTab] = useState('followup')
   const [selectedFollowup, setSelectedFollowup] = useState<string | null>(null)
+
+  const followups = useMemo(
+    () => rawFollowups.filter((f) => f.memberId === currentMemberId),
+    [rawFollowups, currentMemberId]
+  )
+  const weeklyReports = useMemo(
+    () => rawWeeklyReports.filter((w) => w.memberId === currentMemberId),
+    [rawWeeklyReports, currentMemberId]
+  )
+  const doctorAdvices = useMemo(
+    () => rawDoctorAdvices.filter((d) => d.memberId === currentMemberId),
+    [rawDoctorAdvices, currentMemberId]
+  )
 
   const handleFollowupClick = (followup: any) => {
     if (followup.status === 'pending') {
@@ -32,7 +45,6 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderFollowupList = () => {
-    const followups = currentFollowups()
     if (followups.length === 0) {
       return (
         <View className={styles.emptyState}>
@@ -123,7 +135,6 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderReportList = () => {
-    const weeklyReports = currentWeeklyReports()
     if (weeklyReports.length === 0) {
       return (
         <View className={styles.emptyState}>
@@ -192,7 +203,6 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderAdviceList = () => {
-    const doctorAdvices = currentDoctorAdvices()
     if (doctorAdvices.length === 0) {
       return (
         <View className={styles.emptyState}>

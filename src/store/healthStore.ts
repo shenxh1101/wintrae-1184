@@ -133,7 +133,7 @@ export const useHealthStore = create<HealthState>((set, get) => ({
 
   currentReminders: () => {
     const { reminders, currentMemberId } = get()
-    return reminders.filter((r) => r.memberId === currentMemberId)
+    return reminders.filter((r) => r.memberId === currentMemberId && r.active !== false)
   },
 
   currentFollowups: () => {
@@ -157,10 +157,24 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       id: `bp_${Date.now()}`,
       memberId: get().currentMemberId
     }
+    const today = new Date().toISOString().split('T')[0]
     set((state) => ({
-      bloodPressureRecords: [newRecord, ...state.bloodPressureRecords]
+      bloodPressureRecords: [newRecord, ...state.bloodPressureRecords],
+      reminders: state.reminders.map((r) => {
+        if (
+          r.memberId === get().currentMemberId &&
+          r.type === 'measure' &&
+          r.title.includes('血压') &&
+          r.time.startsWith(today) &&
+          !r.completed &&
+          r.active !== false
+        ) {
+          return { ...r, completed: true }
+        }
+        return r
+      })
     }))
-    console.log('[HealthStore] 新增血压记录', newRecord)
+    console.log('[HealthStore] 新增血压记录，同步完成测量提醒', newRecord.id)
   },
 
   addBloodSugar: (record) => {
@@ -169,10 +183,24 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       id: `bs_${Date.now()}`,
       memberId: get().currentMemberId
     }
+    const today = new Date().toISOString().split('T')[0]
     set((state) => ({
-      bloodSugarRecords: [newRecord, ...state.bloodSugarRecords]
+      bloodSugarRecords: [newRecord, ...state.bloodSugarRecords],
+      reminders: state.reminders.map((r) => {
+        if (
+          r.memberId === get().currentMemberId &&
+          r.type === 'measure' &&
+          r.title.includes('血糖') &&
+          r.time.startsWith(today) &&
+          !r.completed &&
+          r.active !== false
+        ) {
+          return { ...r, completed: true }
+        }
+        return r
+      })
     }))
-    console.log('[HealthStore] 新增血糖记录', newRecord)
+    console.log('[HealthStore] 新增血糖记录，同步完成测量提醒', newRecord.id)
   },
 
   addSymptom: (record) => {
@@ -285,13 +313,28 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   },
 
   toggleMedicationReminder: (id) => {
+    const med = get().medications.find((m) => m.id === id)
+    if (!med) return
+
+    const newReminderState = !med.reminder
+
     set((state) => ({
       medications: state.medications.map((m) =>
-        m.id === id ? { ...m, reminder: !m.reminder } : m
-      )
+        m.id === id ? { ...m, reminder: newReminderState } : m
+      ),
+      reminders: state.reminders.map((r) => {
+        if (r.relatedId === id) {
+          if (newReminderState) {
+            return { ...r, completed: false, active: true }
+          } else {
+            return { ...r, active: false }
+          }
+        }
+        return r
+      })
     }))
-    const med = get().medications.find((m) => m.id === id)
-    console.log('[HealthStore] 切换用药提醒开关', id, med?.reminder)
+
+    console.log('[HealthStore] 切换用药提醒开关', id, newReminderState)
   },
 
   deleteMedication: (id) => {
@@ -303,15 +346,61 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   },
 
   deleteBloodPressure: (id) => {
+    const record = get().bloodPressureRecords.find((r) => r.id === id)
+    if (!record) return
+    const today = new Date().toISOString().split('T')[0]
+    const isTodayRecord = record.time.startsWith(today)
+    const memberId = record.memberId
+    const hasOtherTodayBP = get().bloodPressureRecords.some(
+      (r) => r.id !== id && r.memberId === memberId && r.time.startsWith(today)
+    )
     set((state) => ({
-      bloodPressureRecords: state.bloodPressureRecords.filter((r) => r.id !== id)
+      bloodPressureRecords: state.bloodPressureRecords.filter((r) => r.id !== id),
+      reminders: isTodayRecord && !hasOtherTodayBP
+        ? state.reminders.map((r) => {
+            if (
+              r.memberId === memberId &&
+              r.type === 'measure' &&
+              r.title.includes('血压') &&
+              r.time.startsWith(today) &&
+              r.completed &&
+              r.active !== false
+            ) {
+              return { ...r, completed: false }
+            }
+            return r
+          })
+        : state.reminders
     }))
     console.log('[HealthStore] 删除血压记录', id)
   },
 
   deleteBloodSugar: (id) => {
+    const record = get().bloodSugarRecords.find((r) => r.id === id)
+    if (!record) return
+    const today = new Date().toISOString().split('T')[0]
+    const isTodayRecord = record.time.startsWith(today)
+    const memberId = record.memberId
+    const hasOtherTodayBS = get().bloodSugarRecords.some(
+      (r) => r.id !== id && r.memberId === memberId && r.time.startsWith(today)
+    )
     set((state) => ({
-      bloodSugarRecords: state.bloodSugarRecords.filter((r) => r.id !== id)
+      bloodSugarRecords: state.bloodSugarRecords.filter((r) => r.id !== id),
+      reminders: isTodayRecord && !hasOtherTodayBS
+        ? state.reminders.map((r) => {
+            if (
+              r.memberId === memberId &&
+              r.type === 'measure' &&
+              r.title.includes('血糖') &&
+              r.time.startsWith(today) &&
+              r.completed &&
+              r.active !== false
+            ) {
+              return { ...r, completed: false }
+            }
+            return r
+          })
+        : state.reminders
     }))
     console.log('[HealthStore] 删除血糖记录', id)
   },

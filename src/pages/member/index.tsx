@@ -24,7 +24,6 @@ const MemberDetailPage: React.FC = () => {
     bloodPressureRecords: rawBpRecords,
     bloodSugarRecords: rawBsRecords,
     symptomRecords: rawSymptomRecords,
-    currentMemberId,
     familyMembers
   } = useHealthStore()
 
@@ -34,18 +33,18 @@ const MemberDetailPage: React.FC = () => {
   )
 
   const bloodPressureRecords = useMemo(
-    () => rawBpRecords.filter((r) => r.memberId === currentMemberId),
-    [rawBpRecords, currentMemberId]
+    () => rawBpRecords.filter((r) => r.memberId === memberId),
+    [rawBpRecords, memberId]
   )
 
   const bloodSugarRecords = useMemo(
-    () => rawBsRecords.filter((r) => r.memberId === currentMemberId),
-    [rawBsRecords, currentMemberId]
+    () => rawBsRecords.filter((r) => r.memberId === memberId),
+    [rawBsRecords, memberId]
   )
 
   const symptomRecords = useMemo(
-    () => rawSymptomRecords.filter((r) => r.memberId === currentMemberId),
-    [rawSymptomRecords, currentMemberId]
+    () => rawSymptomRecords.filter((r) => r.memberId === memberId),
+    [rawSymptomRecords, memberId]
   )
 
   const healthStats = useMemo(() => {

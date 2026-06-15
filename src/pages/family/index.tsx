@@ -27,7 +27,7 @@ const FamilyPage: React.FC = () => {
     [bloodSugarRecords, currentMemberId]
   )
   const currentReminderList = useMemo(
-    () => reminders.filter((r) => r.memberId === currentMemberId),
+    () => reminders.filter((r) => r.memberId === currentMemberId && r.active !== false),
     [reminders, currentMemberId]
   )
 
