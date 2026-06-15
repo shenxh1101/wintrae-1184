@@ -16,16 +16,19 @@ const HomePage: React.FC = () => {
   const {
     familyMembers,
     currentMemberId,
-    currentBloodPressureRecords,
-    currentBloodSugarRecords,
-    currentReminders,
+    bloodPressureRecords,
+    bloodSugarRecords,
+    symptomRecords,
+    dietRecords,
+    exerciseRecords,
+    reminders,
+    doctorAdvices,
+    medications,
     bloodPressureTrend,
     bloodSugarTrend,
-    getHealthOverview,
-    currentDoctorAdvices,
-    currentMedications,
     toggleReminder,
-    setCurrentMember
+    setCurrentMember,
+    setRecordInitialTab
   } = useHealthStore()
 
   const [trendType, setTrendType] = useState<'bp' | 'bs'>('bp')
@@ -35,30 +38,63 @@ const HomePage: React.FC = () => {
     [familyMembers, currentMemberId]
   )
 
-  const todayReminders = useMemo(
-    () => currentReminders().filter((r) => isToday(r.time)).slice(0, 3),
-    []
+  const currentBP = useMemo(
+    () => bloodPressureRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodPressureRecords, currentMemberId]
+  )
+  const currentBS = useMemo(
+    () => bloodSugarRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodSugarRecords, currentMemberId]
+  )
+  const currentReminderList = useMemo(
+    () => reminders.filter((r) => r.memberId === currentMemberId),
+    [reminders, currentMemberId]
+  )
+  const currentAdvices = useMemo(
+    () => doctorAdvices.filter((d) => d.memberId === currentMemberId),
+    [doctorAdvices, currentMemberId]
+  )
+  const currentMeds = useMemo(
+    () => medications.filter((m) => m.memberId === currentMemberId),
+    [medications, currentMemberId]
+  )
+  const currentSymptoms = useMemo(
+    () => symptomRecords.filter((r) => r.memberId === currentMemberId),
+    [symptomRecords, currentMemberId]
+  )
+  const currentDiet = useMemo(
+    () => dietRecords.filter((r) => r.memberId === currentMemberId),
+    [dietRecords, currentMemberId]
+  )
+  const currentExercise = useMemo(
+    () => exerciseRecords.filter((r) => r.memberId === currentMemberId),
+    [exerciseRecords, currentMemberId]
   )
 
-  const latestBP = useMemo(() => currentBloodPressureRecords()[0], [])
-  const latestBS = useMemo(() => currentBloodSugarRecords()[0], [])
+  const todayReminders = useMemo(
+    () => currentReminderList.filter((r) => isToday(r.time)).slice(0, 3),
+    [currentReminderList]
+  )
+
+  const latestBP = useMemo(() => currentBP[0], [currentBP])
+  const latestBS = useMemo(() => currentBS[0], [currentBS])
 
   const bpAvg = useMemo(() => {
-    const recent = currentBloodPressureRecords().slice(0, 7)
+    const recent = currentBP.slice(0, 7)
     return {
       systolic: Math.round(calculateAverage(recent.map((r) => r.systolic))),
       diastolic: Math.round(calculateAverage(recent.map((r) => r.diastolic)))
     }
-  }, [])
+  }, [currentBP])
 
   const bsAvg = useMemo(() => {
-    const recent = currentBloodSugarRecords().slice(0, 7)
+    const recent = currentBS.slice(0, 7)
     return calculateAverage(recent.map((r) => r.value)).toFixed(1)
-  }, [])
+  }, [currentBS])
 
   const nextVisit = useMemo(() => {
-    return currentDoctorAdvices().find((d) => d.nextVisit)?.nextVisit
-  }, [])
+    return currentAdvices.find((d) => d.nextVisit)?.nextVisit
+  }, [currentAdvices])
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours()
@@ -96,6 +132,7 @@ const HomePage: React.FC = () => {
     const route = routes[action]
     if (route) {
       if (tabBarActions.includes(action)) {
+        setRecordInitialTab(action as any)
         Taro.switchTab({ url: '/pages/record/index' }).catch((err) => {
           console.error('[HomePage] switchTab 跳转失败', err)
         })
@@ -159,8 +196,44 @@ const HomePage: React.FC = () => {
 
   const trendData: TrendDataPoint[] = trendType === 'bp' ? bloodPressureTrend : bloodSugarTrend
 
-  const healthOverview = useMemo(() => getHealthOverview(), [])
-  const medications = useMemo(() => currentMedications(), [])
+  const healthOverview = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0]
+    const isTodayStr = (time: string) => time.startsWith(today)
+
+    const todayRecords = [
+      ...currentBP.filter((r) => isTodayStr(r.time)),
+      ...currentBS.filter((r) => isTodayStr(r.time)),
+      ...currentSymptoms.filter((r) => isTodayStr(r.time)),
+      ...currentDiet.filter((r) => isTodayStr(r.time)),
+      ...currentExercise.filter((r) => isTodayStr(r.time))
+    ].length
+
+    const pendingReminders = currentReminderList.filter(
+      (r) => isTodayStr(r.time) && !r.completed
+    ).length
+
+    const abnormalCount = [
+      ...currentBP.filter((r) => r.status !== 'normal'),
+      ...currentBS.filter((r) => r.status !== 'normal')
+    ].length
+
+    const nextVisit = currentAdvices.find((a) => a.nextVisit)?.nextVisit
+
+    const todayMedReminders = currentReminderList.filter(
+      (r) => r.type === 'medication' && isTodayStr(r.time)
+    )
+    const medicationTaken = todayMedReminders.filter((r) => r.completed).length
+    const medicationTotal = todayMedReminders.length || currentMeds.reduce((sum, m) => sum + m.times.length, 0)
+
+    return {
+      todayRecords,
+      pendingReminders,
+      abnormalCount,
+      nextVisit,
+      medicationTaken,
+      medicationTotal
+    }
+  }, [currentBP, currentBS, currentSymptoms, currentDiet, currentExercise, currentReminderList, currentAdvices, currentMeds])
 
   const medicationProgress = healthOverview.medicationTotal > 0
     ? Math.round((healthOverview.medicationTaken / healthOverview.medicationTotal) * 100)

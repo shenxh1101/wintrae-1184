@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { View, Text, Input, Textarea, ScrollView } from '@tarojs/components'
 import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
@@ -34,22 +34,53 @@ const sugarPeriods = [
 const RecordPage: React.FC = () => {
   const router = useRouter()
   const {
-    currentBloodPressureRecords,
-    currentBloodSugarRecords,
-    currentSymptomRecords,
-    currentDietRecords,
-    currentExerciseRecords,
+    bloodPressureRecords,
+    bloodSugarRecords,
+    symptomRecords,
+    dietRecords,
+    exerciseRecords,
+    currentMemberId,
     addBloodPressure,
     addBloodSugar,
     addSymptom,
     addDiet,
-    addExercise
+    addExercise,
+    recordInitialTab,
+    setRecordInitialTab
   } = useHealthStore()
 
   const [activeTab, setActiveTab] = useState<RecordType>(
     (router.params.tab as RecordType) || 'bloodPressure'
   )
   const [showInput, setShowInput] = useState(false)
+
+  useEffect(() => {
+    if (recordInitialTab) {
+      setActiveTab(recordInitialTab)
+      setRecordInitialTab(null)
+    }
+  }, [recordInitialTab, setActiveTab, setRecordInitialTab])
+
+  const filteredBP = useMemo(
+    () => bloodPressureRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodPressureRecords, currentMemberId]
+  )
+  const filteredBS = useMemo(
+    () => bloodSugarRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodSugarRecords, currentMemberId]
+  )
+  const filteredSymptoms = useMemo(
+    () => symptomRecords.filter((r) => r.memberId === currentMemberId),
+    [symptomRecords, currentMemberId]
+  )
+  const filteredDiet = useMemo(
+    () => dietRecords.filter((r) => r.memberId === currentMemberId),
+    [dietRecords, currentMemberId]
+  )
+  const filteredExercise = useMemo(
+    () => exerciseRecords.filter((r) => r.memberId === currentMemberId),
+    [exerciseRecords, currentMemberId]
+  )
 
   const [systolic, setSystolic] = useState('')
   const [diastolic, setDiastolic] = useState('')
@@ -67,14 +98,14 @@ const RecordPage: React.FC = () => {
 
   const currentRecords = useMemo(() => {
     switch (activeTab) {
-      case 'bloodPressure': return currentBloodPressureRecords()
-      case 'bloodSugar': return currentBloodSugarRecords()
-      case 'symptom': return currentSymptomRecords()
-      case 'diet': return currentDietRecords()
-      case 'exercise': return currentExerciseRecords()
+      case 'bloodPressure': return filteredBP
+      case 'bloodSugar': return filteredBS
+      case 'symptom': return filteredSymptoms
+      case 'diet': return filteredDiet
+      case 'exercise': return filteredExercise
       default: return []
     }
-  }, [activeTab, currentBloodPressureRecords, currentBloodSugarRecords, currentSymptomRecords, currentDietRecords, currentExerciseRecords])
+  }, [activeTab, filteredBP, filteredBS, filteredSymptoms, filteredDiet, filteredExercise])
 
   const toggleSymptom = (symptom: string) => {
     setSelectedSymptoms((prev) =>

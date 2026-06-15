@@ -21,10 +21,11 @@ const MemberDetailPage: React.FC = () => {
   const memberId = router.params.id
 
   const {
-    familyMembers,
-    currentBloodPressureRecords,
-    currentBloodSugarRecords,
-    currentSymptomRecords
+    bloodPressureRecords: rawBpRecords,
+    bloodSugarRecords: rawBsRecords,
+    symptomRecords: rawSymptomRecords,
+    currentMemberId,
+    familyMembers
   } = useHealthStore()
 
   const member = useMemo(
@@ -32,9 +33,24 @@ const MemberDetailPage: React.FC = () => {
     [familyMembers, memberId]
   )
 
+  const bloodPressureRecords = useMemo(
+    () => rawBpRecords.filter((r) => r.memberId === currentMemberId),
+    [rawBpRecords, currentMemberId]
+  )
+
+  const bloodSugarRecords = useMemo(
+    () => rawBsRecords.filter((r) => r.memberId === currentMemberId),
+    [rawBsRecords, currentMemberId]
+  )
+
+  const symptomRecords = useMemo(
+    () => rawSymptomRecords.filter((r) => r.memberId === currentMemberId),
+    [rawSymptomRecords, currentMemberId]
+  )
+
   const healthStats = useMemo(() => {
-    const bpRecords = currentBloodPressureRecords().slice(0, 7)
-    const bsRecords = currentBloodSugarRecords().slice(0, 7)
+    const bpRecords = bloodPressureRecords.slice(0, 7)
+    const bsRecords = bloodSugarRecords.slice(0, 7)
 
     const bpAvg = bpRecords.length > 0 ? {
       systolic: Math.round(calculateAverage(bpRecords.map((r) => r.systolic))),
@@ -51,21 +67,21 @@ const MemberDetailPage: React.FC = () => {
     ].length
 
     return { bpAvg, bsAvg, abnormalCount }
-  }, [currentBloodPressureRecords, currentBloodSugarRecords])
+  }, [bloodPressureRecords, bloodSugarRecords])
 
   const latestBP = useMemo(
-    () => currentBloodPressureRecords()[0] as BloodPressureRecord | undefined,
-    [currentBloodPressureRecords]
+    () => bloodPressureRecords[0] as BloodPressureRecord | undefined,
+    [bloodPressureRecords]
   )
 
   const latestBS = useMemo(
-    () => currentBloodSugarRecords()[0] as BloodSugarRecord | undefined,
-    [currentBloodSugarRecords]
+    () => bloodSugarRecords[0] as BloodSugarRecord | undefined,
+    [bloodSugarRecords]
   )
 
   const latestSymptom = useMemo(
-    () => currentSymptomRecords()[0] as SymptomRecord | undefined,
-    [currentSymptomRecords]
+    () => symptomRecords[0] as SymptomRecord | undefined,
+    [symptomRecords]
   )
 
   const handleCall = () => {

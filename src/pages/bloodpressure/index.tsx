@@ -10,9 +10,12 @@ import { formatDate, formatTime } from '@/utils/dateUtils'
 import { calculateAverage } from '@/utils/healthUtils'
 
 const BloodPressurePage: React.FC = () => {
-  const { currentBloodPressureRecords, bloodPressureTrend, deleteBloodPressure } = useHealthStore()
+  const { bloodPressureRecords: rawRecords, currentMemberId, bloodPressureTrend, deleteBloodPressure } = useHealthStore()
 
-  const bloodPressureRecords = useMemo(() => currentBloodPressureRecords(), [currentBloodPressureRecords])
+  const bloodPressureRecords = useMemo(
+    () => rawRecords.filter((r) => r.memberId === currentMemberId),
+    [rawRecords, currentMemberId]
+  )
 
   const latestRecord = useMemo(() => bloodPressureRecords[0], [bloodPressureRecords])
 

@@ -12,7 +12,8 @@ import type {
   FamilyMember,
   DoctorAdvice,
   HealthOverview,
-  TrendDataPoint
+  TrendDataPoint,
+  RecordType
 } from '@/types'
 import {
   mockBloodPressureRecords,
@@ -44,8 +45,10 @@ interface HealthState {
   bloodPressureTrend: TrendDataPoint[]
   bloodSugarTrend: TrendDataPoint[]
   currentMemberId: string
+  recordInitialTab: RecordType | null
 
   setCurrentMember: (id: string) => void
+  setRecordInitialTab: (tab: RecordType | null) => void
 
   currentBloodPressureRecords: () => BloodPressureRecord[]
   currentBloodSugarRecords: () => BloodSugarRecord[]
@@ -89,11 +92,14 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   bloodPressureTrend: mockBloodPressureTrend,
   bloodSugarTrend: mockBloodSugarTrend,
   currentMemberId: 'm1',
+  recordInitialTab: null,
 
   setCurrentMember: (id) => {
     set({ currentMemberId: id })
     console.log('[HealthStore] 切换当前成员', id)
   },
+
+  setRecordInitialTab: (tab) => set({ recordInitialTab: tab }),
 
   currentBloodPressureRecords: () => {
     const { bloodPressureRecords, currentMemberId } = get()
@@ -218,15 +224,37 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   },
 
   addMedication: (record) => {
-    const newRecord: Medication = {
+    const newId = `med_${Date.now()}`
+    const memberId = get().currentMemberId
+    const newMed: Medication = {
       ...record,
-      id: `med_${Date.now()}`,
-      memberId: get().currentMemberId
+      id: newId,
+      memberId
     }
+
+    const newReminders: Reminder[] = []
+    if (record.reminder && record.times && record.times.length > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      record.times.forEach((time, index) => {
+        newReminders.push({
+          id: `rem_${Date.now()}_${index}`,
+          memberId,
+          type: 'medication',
+          title: `${record.name} ${record.dosage}`,
+          time: `${today} ${time}`,
+          completed: false,
+          relatedId: newId,
+          note: record.note ? `剂量：${record.dosage}` : undefined
+        })
+      })
+    }
+
     set((state) => ({
-      medications: [...state.medications, newRecord]
+      medications: [...state.medications, newMed],
+      reminders: [...state.reminders, ...newReminders].sort((a, b) => a.time.localeCompare(b.time))
     }))
-    console.log('[HealthStore] 新增用药', newRecord)
+
+    console.log('[HealthStore] 新增用药', newMed.name, '及', newReminders.length, '条提醒')
   },
 
   submitFollowup: (id, answers) => {

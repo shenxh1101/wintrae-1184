@@ -26,11 +26,14 @@ const periodIcons: Record<string, string> = {
 }
 
 const BloodSugarPage: React.FC = () => {
-  const { currentBloodSugarRecords, bloodSugarTrend, addBloodSugar: _addBloodSugar, deleteBloodSugar } = useHealthStore()
+  const { bloodSugarRecords: rawRecords, currentMemberId, bloodSugarTrend, addBloodSugar, deleteBloodSugar, setRecordInitialTab } = useHealthStore()
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('all')
 
-  const bloodSugarRecords = useMemo(() => currentBloodSugarRecords(), [currentBloodSugarRecords])
+  const bloodSugarRecords = useMemo(
+    () => rawRecords.filter((r) => r.memberId === currentMemberId),
+    [rawRecords, currentMemberId]
+  )
 
   const latestRecord = useMemo(() => bloodSugarRecords[0], [bloodSugarRecords])
 
@@ -62,6 +65,7 @@ const BloodSugarPage: React.FC = () => {
   }, [bloodSugarRecords])
 
   const handleAddRecord = () => {
+    setRecordInitialTab('bloodSugar')
     Taro.switchTab({ url: '/pages/record/index' }).catch((err) => {
       console.error('[BloodSugarPage] 跳转记录页面失败', err)
     })

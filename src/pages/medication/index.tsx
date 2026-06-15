@@ -15,11 +15,11 @@ interface TakenState {
 
 const MedicationPage: React.FC = () => {
   const {
-    currentMedications,
-    currentReminders,
+    medications: rawMedications,
+    reminders: rawReminders,
+    currentMemberId,
     toggleMedicationReminder,
     deleteMedication,
-    addReminder,
     addMedication
   } = useHealthStore()
 
@@ -31,8 +31,14 @@ const MedicationPage: React.FC = () => {
   const [newMedTimes, setNewMedTimes] = useState('')
   const [newMedNote, setNewMedNote] = useState('')
 
-  const medications = useMemo(() => currentMedications(), [currentMedications])
-  const reminders = useMemo(() => currentReminders(), [currentReminders])
+  const medications = useMemo(
+    () => rawMedications.filter((m) => m.memberId === currentMemberId),
+    [rawMedications, currentMemberId]
+  )
+  const reminders = useMemo(
+    () => rawReminders.filter((r) => r.memberId === currentMemberId),
+    [rawReminders, currentMemberId]
+  )
 
   const { totalToday, takenToday, pendingReminders } = useMemo(() => {
     let total = 0
@@ -128,8 +134,6 @@ const MedicationPage: React.FC = () => {
       .map((t) => t.trim())
       .filter((t) => t.length > 0)
 
-    const newMedId = `med_${Date.now()}`
-
     addMedication({
       name: newMedName.trim(),
       dosage: newMedDosage.trim(),
@@ -138,20 +142,6 @@ const MedicationPage: React.FC = () => {
       startDate: new Date().toISOString().split('T')[0],
       note: newMedNote.trim() || undefined
     })
-
-    if (timesArray.length > 0) {
-      const today = new Date().toISOString().split('T')[0]
-      timesArray.forEach((time) => {
-        addReminder({
-          type: 'medication',
-          title: `服药提醒：${newMedName.trim()}`,
-          time: `${today} ${time}`,
-          completed: false,
-          relatedId: newMedId,
-          note: `剂量：${newMedDosage.trim()}`
-        })
-      })
-    }
 
     Taro.showToast({
       title: '添加成功',

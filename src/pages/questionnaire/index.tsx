@@ -13,18 +13,22 @@ const tabs = [
 ]
 
 const QuestionnairePage: React.FC = () => {
-  const { currentFollowups, submitFollowup } = useHealthStore()
+  const { followups: allFollowups, currentMemberId, submitFollowup } = useHealthStore()
   const router = useRouter()
-  const followups = currentFollowups()
   const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending')
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
   const [currentAnsweringId, setCurrentAnsweringId] = useState<string | null>(null)
 
+  const followups = useMemo(
+    () => allFollowups.filter((f) => f.memberId === currentMemberId),
+    [allFollowups, currentMemberId]
+  )
+
   useEffect(() => {
     const id = router.params.id
     if (id) {
-      const followup = followups.find((f) => f.id === id)
+      const followup = allFollowups.find((f) => f.id === id)
       if (followup) {
         setExpandedId(id)
         if (followup.status === 'completed') {
@@ -34,7 +38,7 @@ const QuestionnairePage: React.FC = () => {
         }
       }
     }
-  }, [router.params.id, followups])
+  }, [router.params.id, allFollowups])
 
   const pendingFollowups = useMemo(
     () => followups.filter((f) => f.status === 'pending' || f.status === 'expired'),

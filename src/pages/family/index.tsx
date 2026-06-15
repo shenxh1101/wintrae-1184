@@ -12,11 +12,24 @@ const FamilyPage: React.FC = () => {
   const {
     familyMembers,
     currentMemberId,
-    currentBloodPressureRecords,
-    currentBloodSugarRecords,
-    setCurrentMember,
-    currentReminders
+    bloodPressureRecords,
+    bloodSugarRecords,
+    reminders,
+    setCurrentMember
   } = useHealthStore()
+
+  const currentBP = useMemo(
+    () => bloodPressureRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodPressureRecords, currentMemberId]
+  )
+  const currentBS = useMemo(
+    () => bloodSugarRecords.filter((r) => r.memberId === currentMemberId),
+    [bloodSugarRecords, currentMemberId]
+  )
+  const currentReminderList = useMemo(
+    () => reminders.filter((r) => r.memberId === currentMemberId),
+    [reminders, currentMemberId]
+  )
 
   const currentMember = useMemo(
     () => familyMembers.find((m) => m.id === currentMemberId),
@@ -34,8 +47,8 @@ const FamilyPage: React.FC = () => {
   )
 
   const memberStats = useMemo(() => {
-    const bpRecords = currentBloodPressureRecords().slice(0, 7)
-    const bsRecords = currentBloodSugarRecords().slice(0, 7)
+    const bpRecords = currentBP.slice(0, 7)
+    const bsRecords = currentBS.slice(0, 7)
 
     const bpAvg = bpRecords.length > 0 ? {
       systolic: Math.round(calculateAverage(bpRecords.map((r) => r.systolic))),
@@ -47,14 +60,14 @@ const FamilyPage: React.FC = () => {
       : null
 
     const abnormalCount = [
-      ...currentBloodPressureRecords().slice(0, 7).filter((r) => r.status !== 'normal'),
-      ...currentBloodSugarRecords().slice(0, 7).filter((r) => r.status !== 'normal')
+      ...currentBP.slice(0, 7).filter((r) => r.status !== 'normal'),
+      ...currentBS.slice(0, 7).filter((r) => r.status !== 'normal')
     ].length
 
-    const pendingReminders = currentReminders().filter((r) => !r.completed).length
+    const pendingReminders = currentReminderList.filter((r) => !r.completed).length
 
     return { bpAvg, bsAvg, abnormalCount, pendingReminders }
-  }, [currentBloodPressureRecords, currentBloodSugarRecords, currentReminders])
+  }, [currentBP, currentBS, currentReminderList])
 
   const getOverallStatus = (): { text: string; status: HealthStatus } => {
     if (memberStats.abnormalCount > 3) return { text: '需关注', status: 'danger' }

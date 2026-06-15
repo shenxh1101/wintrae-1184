@@ -22,7 +22,7 @@ const typeOptions = [
 ]
 
 const ReminderPage: React.FC = () => {
-  const { currentReminders, currentMedications, toggleReminder, addReminder } = useHealthStore()
+  const { reminders, medications, currentMemberId, toggleReminder, addReminder } = useHealthStore()
   const [activeTab, setActiveTab] = useState('today')
   const [showAdd, setShowAdd] = useState(false)
   const [newReminder, setNewReminder] = useState({
@@ -32,30 +32,36 @@ const ReminderPage: React.FC = () => {
     note: ''
   })
 
-  const reminders = currentReminders()
-  const medications = currentMedications()
+  const currentReminders = useMemo(
+    () => reminders.filter((r) => r.memberId === currentMemberId),
+    [reminders, currentMemberId]
+  )
+  const currentMedications = useMemo(
+    () => medications.filter((m) => m.memberId === currentMemberId),
+    [medications, currentMemberId]
+  )
 
   const filteredReminders = useMemo(() => {
-    let result: typeof reminders = []
+    let result: typeof currentReminders = []
     switch (activeTab) {
       case 'today':
-        result = reminders.filter((r) => isToday(r.time))
+        result = currentReminders.filter((r) => isToday(r.time))
         break
       case 'tomorrow':
-        result = reminders.filter((r) => isTomorrow(r.time))
+        result = currentReminders.filter((r) => isTomorrow(r.time))
         break
       case 'upcoming':
-        result = reminders.filter((r) => !isToday(r.time) && !isTomorrow(r.time))
+        result = currentReminders.filter((r) => !isToday(r.time) && !isTomorrow(r.time))
         break
       default:
-        result = reminders
+        result = currentReminders
     }
     return result.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
-  }, [reminders, activeTab])
+  }, [currentReminders, activeTab])
 
   const handleToggleReminder = (id: string) => {
     toggleReminder(id)
-    const reminder = reminders.find((r) => r.id === id)
+    const reminder = currentReminders.find((r) => r.id === id)
     Taro.showToast({
       title: reminder?.completed ? '已取消' : '已完成',
       icon: 'success',
@@ -91,10 +97,10 @@ const ReminderPage: React.FC = () => {
       <View className={styles.section}>
         <View className={styles.sectionHeader}>
           <Text className={styles.sectionTitle}>用药计划</Text>
-          <Text className={styles.sectionCount}>{medications.length} 种药物</Text>
+          <Text className={styles.sectionCount}>{currentMedications.length} 种药物</Text>
         </View>
         <View className={styles.medicationsCard}>
-          {medications.map((med) => (
+          {currentMedications.map((med) => (
             <View key={med.id} className={styles.medicationItem}>
               <View className={styles.medicationHeader}>
                 <Text className={styles.medicationName}>{med.name}</Text>
