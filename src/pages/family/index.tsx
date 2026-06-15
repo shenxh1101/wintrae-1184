@@ -12,10 +12,10 @@ const FamilyPage: React.FC = () => {
   const {
     familyMembers,
     currentMemberId,
-    bloodPressureRecords,
-    bloodSugarRecords,
+    currentBloodPressureRecords,
+    currentBloodSugarRecords,
     setCurrentMember,
-    reminders
+    currentReminders
   } = useHealthStore()
 
   const currentMember = useMemo(
@@ -34,8 +34,8 @@ const FamilyPage: React.FC = () => {
   )
 
   const memberStats = useMemo(() => {
-    const bpRecords = bloodPressureRecords.slice(0, 7)
-    const bsRecords = bloodSugarRecords.slice(0, 7)
+    const bpRecords = currentBloodPressureRecords().slice(0, 7)
+    const bsRecords = currentBloodSugarRecords().slice(0, 7)
 
     const bpAvg = bpRecords.length > 0 ? {
       systolic: Math.round(calculateAverage(bpRecords.map((r) => r.systolic))),
@@ -47,19 +47,14 @@ const FamilyPage: React.FC = () => {
       : null
 
     const abnormalCount = [
-      ...bloodPressureRecords.slice(0, 7).filter((r) => r.status !== 'normal'),
-      ...bloodSugarRecords.slice(0, 7).filter((r) => r.status !== 'normal')
+      ...currentBloodPressureRecords().slice(0, 7).filter((r) => r.status !== 'normal'),
+      ...currentBloodSugarRecords().slice(0, 7).filter((r) => r.status !== 'normal')
     ].length
 
-    const pendingReminders = reminders.filter((r) => !r.completed).length
+    const pendingReminders = currentReminders().filter((r) => !r.completed).length
 
     return { bpAvg, bsAvg, abnormalCount, pendingReminders }
-  }, [bloodPressureRecords, bloodSugarRecords, reminders])
-
-  const getStatusText = (status: HealthStatus): string => {
-    const texts = { normal: '正常', warning: '偏高', danger: '异常' }
-    return texts[status]
-  }
+  }, [currentBloodPressureRecords, currentBloodSugarRecords, currentReminders])
 
   const getOverallStatus = (): { text: string; status: HealthStatus } => {
     if (memberStats.abnormalCount > 3) return { text: '需关注', status: 'danger' }
@@ -95,12 +90,6 @@ const FamilyPage: React.FC = () => {
           })
         }
       }
-    })
-  }
-
-  const handleMemberDetail = (memberId: string) => {
-    Taro.navigateTo({
-      url: `/pages/member/index?id=${memberId}`
     })
   }
 

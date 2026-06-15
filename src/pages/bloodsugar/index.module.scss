@@ -274,6 +274,17 @@
   color: $color-text-tertiary;
 }
 
+.itemDelete {
+  padding: $spacing-sm;
+  margin-left: $spacing-sm;
+  font-size: 32rpx;
+  flex-shrink: 0;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
 .emptyState {
   padding: $spacing-xxl $spacing-lg;
   text-align: center;

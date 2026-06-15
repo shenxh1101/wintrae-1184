@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react'
-import { View, Text, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import React, { useState, useMemo, useEffect } from 'react'
+import { View, Text, ScrollView, Input, Textarea } from '@tarojs/components'
+import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useHealthStore } from '@/store/healthStore'
@@ -13,9 +13,28 @@ const tabs = [
 ]
 
 const QuestionnairePage: React.FC = () => {
-  const { followups } = useHealthStore()
+  const { currentFollowups, submitFollowup } = useHealthStore()
+  const router = useRouter()
+  const followups = currentFollowups()
   const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({})
+  const [currentAnsweringId, setCurrentAnsweringId] = useState<string | null>(null)
+
+  useEffect(() => {
+    const id = router.params.id
+    if (id) {
+      const followup = followups.find((f) => f.id === id)
+      if (followup) {
+        setExpandedId(id)
+        if (followup.status === 'completed') {
+          setActiveTab('completed')
+        } else {
+          setActiveTab('pending')
+        }
+      }
+    }
+  }, [router.params.id, followups])
 
   const pendingFollowups = useMemo(
     () => followups.filter((f) => f.status === 'pending' || f.status === 'expired'),
@@ -38,7 +57,51 @@ const QuestionnairePage: React.FC = () => {
       Taro.showToast({ title: '问卷已过期', icon: 'none' })
       return
     }
-    Taro.showToast({ title: '功能开发中', icon: 'none' })
+    setCurrentAnsweringId(followup.id)
+    setAnswers({})
+  }
+
+  const handleCancelAnswer = () => {
+    setCurrentAnsweringId(null)
+    setAnswers({})
+  }
+
+  const handleSubmitAnswer = (followup: FollowupRecord) => {
+    const unansweredRequired = followup.questions.filter(
+      (q) => q.required && (!answers[q.id] || (Array.isArray(answers[q.id]) && (answers[q.id] as string[]).length === 0))
+    )
+    if (unansweredRequired.length > 0) {
+      Taro.showToast({ title: '请完成所有必答题', icon: 'none' })
+      return
+    }
+    submitFollowup(followup.id, answers)
+    Taro.showToast({ title: '提交成功', icon: 'success' })
+    setCurrentAnsweringId(null)
+    setAnswers({})
+    setActiveTab('completed')
+    setExpandedId(followup.id)
+  }
+
+  const handleSingleSelect = (questionId: string, option: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: option }))
+  }
+
+  const handleMultipleSelect = (questionId: string, option: string) => {
+    setAnswers((prev) => {
+      const current = (prev[questionId] as string[]) || []
+      const updated = current.includes(option)
+        ? current.filter((o) => o !== option)
+        : [...current, option]
+      return { ...prev, [questionId]: updated }
+    })
+  }
+
+  const handleNumberInput = (questionId: string, value: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }))
+  }
+
+  const handleTextInput = (questionId: string, value: string) => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }))
   }
 
   const getStatusText = (status: string) => {
@@ -97,6 +160,76 @@ const QuestionnairePage: React.FC = () => {
     return <Text className={styles.textAnswer}>{answer}</Text>
   }
 
+  const renderAnsweringQuestion = (question: FollowupQuestion, index: number) => {
+    const currentAnswer = answers[question.id]
+    const isAnswered = currentAnswer && (!Array.isArray(currentAnswer) || currentAnswer.length > 0)
+
+    return (
+      <View key={question.id} className={styles.questionItem}>
+        <Text className={styles.questionText}>
+          {index + 1}. {question.question}
+          {question.required && <Text className={styles.questionRequired}>*</Text>}
+        </Text>
+        <Text className={styles.questionType}>{getQuestionTypeText(question.type)}</Text>
+
+        {(question.type === 'single' || question.type === 'multiple') && question.options && (
+          <View className={styles.optionList}>
+            {question.options.map((option, optIndex) => {
+              const isSelected = isAnswered && (
+                question.type === 'multiple'
+                  ? Array.isArray(currentAnswer) && (currentAnswer as string[]).includes(option)
+                  : currentAnswer === option
+              )
+
+              return (
+                <View
+                  key={optIndex}
+                  className={classnames(styles.optionItem, isSelected && styles.selected)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (question.type === 'single') {
+                      handleSingleSelect(question.id, option)
+                    } else {
+                      handleMultipleSelect(question.id, option)
+                    }
+                  }}>
+                  <View className={classnames(
+                    question.type === 'multiple' ? styles.optionCheckbox : styles.optionRadio,
+                    isSelected && styles.selected
+                  )}>
+                    {isSelected && question.type === 'multiple' && '✓'}
+                  </View>
+                  <Text>{option}</Text>
+                </View>
+              )
+            })}
+          </View>
+        )}
+
+        {question.type === 'number' && (
+          <Input
+            className={styles.numberInput}
+            type='digit'
+            placeholder='请输入数字'
+            value={(currentAnswer as string) || ''}
+            onInput={(e) => handleNumberInput(question.id, e.detail.value)}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+
+        {question.type === 'text' && (
+          <Textarea
+            className={styles.textInput}
+            placeholder='请输入内容'
+            value={(currentAnswer as string) || ''}
+            onInput={(e) => handleTextInput(question.id, e.detail.value)}
+            onClick={(e) => e.stopPropagation()}
+          />
+        )}
+      </View>
+    )
+  }
+
   const renderQuestion = (question: FollowupQuestion, index: number, answers?: Record<string, string | string[]>) => {
     const hasAnswer = answers && answers[question.id]
 
@@ -141,6 +274,7 @@ const QuestionnairePage: React.FC = () => {
 
   const renderCard = (followup: FollowupRecord) => {
     const isExpanded = expandedId === followup.id
+    const isAnswering = currentAnsweringId === followup.id
     const completedCount = followup.answers
       ? Object.keys(followup.answers).filter((key) => followup.answers![key]).length
       : 0
@@ -182,41 +316,61 @@ const QuestionnairePage: React.FC = () => {
           </View>
 
           {isExpanded && (
-            <View className={styles.detailSection}>
-              <Text className={styles.detailTitle}>问卷详情</Text>
-
-              {followup.status === 'completed' && (
-                <View className={styles.completionInfo}>
-                  <Text className={styles.completionText}>完成时间</Text>
-                  <Text className={styles.completionValue}>{formatDate(followup.date)}</Text>
-                </View>
-              )}
-
-              {followup.questions.map((question, index) =>
-                renderQuestion(question, index, followup.answers)
-              )}
-
-              {followup.doctorAdvice && (
-                <View className={styles.doctorAdviceSection}>
-                  <Text className={styles.doctorAdviceTitle}>
-                    <Text className={styles.doctorAdviceIcon}>💬</Text>
-                    医生建议
-                  </Text>
-                  <Text className={styles.doctorAdviceContent}>{followup.doctorAdvice}</Text>
-                </View>
-              )}
-
-              {followup.status === 'pending' && (
-                <View className={styles.actionSection}>
-                  <View
-                    className={classnames(styles.startBtn, followup.status === 'expired' && styles.disabled)}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      handleStartQuestionnaire(followup)
-                    }}>
-                    开始答题
+            <View className={styles.detailSection} onClick={(e) => e.stopPropagation()}>
+              {isAnswering ? (
+                <>
+                  <Text className={styles.detailTitle}>答题中</Text>
+                  {followup.questions.map((question, index) =>
+                    renderAnsweringQuestion(question, index)
+                  )}
+                  <View className={styles.actionSection}>
+                    <View
+                      className={styles.cancelBtn}
+                      onClick={handleCancelAnswer}>
+                      取消
+                    </View>
+                    <View
+                      className={styles.startBtn}
+                      onClick={() => handleSubmitAnswer(followup)}>
+                      提交
+                    </View>
                   </View>
-                </View>
+                </>
+              ) : (
+                <>
+                  <Text className={styles.detailTitle}>问卷详情</Text>
+
+                  {followup.status === 'completed' && (
+                    <View className={styles.completionInfo}>
+                      <Text className={styles.completionText}>完成时间</Text>
+                      <Text className={styles.completionValue}>{formatDate(followup.completedDate || followup.date)}</Text>
+                    </View>
+                  )}
+
+                  {followup.questions.map((question, index) =>
+                    renderQuestion(question, index, followup.answers)
+                  )}
+
+                  {followup.doctorAdvice && (
+                    <View className={styles.doctorAdviceSection}>
+                      <Text className={styles.doctorAdviceTitle}>
+                        <Text className={styles.doctorAdviceIcon}>💬</Text>
+                        医生建议
+                      </Text>
+                      <Text className={styles.doctorAdviceContent}>{followup.doctorAdvice}</Text>
+                    </View>
+                  )}
+
+                  {followup.status === 'pending' && (
+                    <View className={styles.actionSection}>
+                      <View
+                        className={classnames(styles.startBtn, followup.status === 'expired' && styles.disabled)}
+                        onClick={handleStartQuestionnaire.bind(null, followup)}>
+                        开始答题
+                      </View>
+                    </View>
+                  )}
+                </>
               )}
             </View>
           )}

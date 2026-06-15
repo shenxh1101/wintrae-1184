@@ -13,13 +13,13 @@ const tabs = [
 ]
 
 const FollowupPage: React.FC = () => {
-  const { followups, weeklyReports, doctorAdvices } = useHealthStore()
+  const { currentFollowups, currentWeeklyReports, currentDoctorAdvices } = useHealthStore()
   const [activeTab, setActiveTab] = useState('followup')
   const [selectedFollowup, setSelectedFollowup] = useState<string | null>(null)
 
   const handleFollowupClick = (followup: any) => {
     if (followup.status === 'pending') {
-      Taro.navigateTo({ url: '/pages/questionnaire/index' }).catch((err) => {
+      Taro.navigateTo({ url: `/pages/questionnaire/index?id=${followup.id}` }).catch((err) => {
         console.error('[FollowupPage] 跳转问卷页面失败', err)
       })
     } else {
@@ -32,6 +32,7 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderFollowupList = () => {
+    const followups = currentFollowups()
     if (followups.length === 0) {
       return (
         <View className={styles.emptyState}>
@@ -122,6 +123,7 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderReportList = () => {
+    const weeklyReports = currentWeeklyReports()
     if (weeklyReports.length === 0) {
       return (
         <View className={styles.emptyState}>
@@ -190,6 +192,7 @@ const FollowupPage: React.FC = () => {
   }
 
   const renderAdviceList = () => {
+    const doctorAdvices = currentDoctorAdvices()
     if (doctorAdvices.length === 0) {
       return (
         <View className={styles.emptyState}>

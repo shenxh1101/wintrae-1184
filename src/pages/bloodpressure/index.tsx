@@ -10,7 +10,9 @@ import { formatDate, formatTime } from '@/utils/dateUtils'
 import { calculateAverage } from '@/utils/healthUtils'
 
 const BloodPressurePage: React.FC = () => {
-  const { bloodPressureRecords, bloodPressureTrend, deleteBloodPressure } = useHealthStore()
+  const { currentBloodPressureRecords, bloodPressureTrend, deleteBloodPressure } = useHealthStore()
+
+  const bloodPressureRecords = useMemo(() => currentBloodPressureRecords(), [currentBloodPressureRecords])
 
   const latestRecord = useMemo(() => bloodPressureRecords[0], [bloodPressureRecords])
 
@@ -45,7 +47,7 @@ const BloodPressurePage: React.FC = () => {
     }
   }, [recent7Days])
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = (id: string, e: any) => {
     e.stopPropagation()
 
     Taro.showModal({

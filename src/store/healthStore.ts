@@ -20,7 +20,6 @@ import {
   mockSymptomRecords,
   mockDietRecords,
   mockExerciseRecords,
-  mockHealthOverview,
   mockBloodPressureTrend,
   mockBloodSugarTrend,
   mockDoctorAdvices,
@@ -42,18 +41,37 @@ interface HealthState {
   weeklyReports: WeeklyReport[]
   familyMembers: FamilyMember[]
   doctorAdvices: DoctorAdvice[]
-  healthOverview: HealthOverview
   bloodPressureTrend: TrendDataPoint[]
   bloodSugarTrend: TrendDataPoint[]
   currentMemberId: string
-  addBloodPressure: (record: Omit<BloodPressureRecord, 'id'>) => void
-  addBloodSugar: (record: Omit<BloodSugarRecord, 'id'>) => void
-  addSymptom: (record: Omit<SymptomRecord, 'id'>) => void
-  addDiet: (record: Omit<DietRecord, 'id'>) => void
-  addExercise: (record: Omit<ExerciseRecord, 'id'>) => void
-  toggleReminder: (id: string) => void
+
   setCurrentMember: (id: string) => void
+
+  currentBloodPressureRecords: () => BloodPressureRecord[]
+  currentBloodSugarRecords: () => BloodSugarRecord[]
+  currentSymptomRecords: () => SymptomRecord[]
+  currentDietRecords: () => DietRecord[]
+  currentExerciseRecords: () => ExerciseRecord[]
+  currentMedications: () => Medication[]
+  currentReminders: () => Reminder[]
+  currentFollowups: () => FollowupRecord[]
+  currentWeeklyReports: () => WeeklyReport[]
+  currentDoctorAdvices: () => DoctorAdvice[]
+
+  addBloodPressure: (record: Omit<BloodPressureRecord, 'id' | 'memberId'>) => void
+  addBloodSugar: (record: Omit<BloodSugarRecord, 'id' | 'memberId'>) => void
+  addSymptom: (record: Omit<SymptomRecord, 'id' | 'memberId'>) => void
+  addDiet: (record: Omit<DietRecord, 'id' | 'memberId'>) => void
+  addExercise: (record: Omit<ExerciseRecord, 'id' | 'memberId'>) => void
+  addReminder: (record: Omit<Reminder, 'id' | 'memberId'>) => void
+  addMedication: (record: Omit<Medication, 'id' | 'memberId'>) => void
+  submitFollowup: (id: string, answers: Record<string, string | string[]>) => void
+  toggleReminder: (id: string) => void
+  toggleMedicationReminder: (id: string) => void
+  deleteMedication: (id: string) => void
   deleteBloodPressure: (id: string) => void
+  deleteBloodSugar: (id: string) => void
+  getHealthOverview: () => HealthOverview
 }
 
 export const useHealthStore = create<HealthState>((set, get) => ({
@@ -68,15 +86,70 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   weeklyReports: mockWeeklyReports,
   familyMembers: mockFamilyMembers,
   doctorAdvices: mockDoctorAdvices,
-  healthOverview: mockHealthOverview,
   bloodPressureTrend: mockBloodPressureTrend,
   bloodSugarTrend: mockBloodSugarTrend,
   currentMemberId: 'm1',
 
+  setCurrentMember: (id) => {
+    set({ currentMemberId: id })
+    console.log('[HealthStore] 切换当前成员', id)
+  },
+
+  currentBloodPressureRecords: () => {
+    const { bloodPressureRecords, currentMemberId } = get()
+    return bloodPressureRecords.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentBloodSugarRecords: () => {
+    const { bloodSugarRecords, currentMemberId } = get()
+    return bloodSugarRecords.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentSymptomRecords: () => {
+    const { symptomRecords, currentMemberId } = get()
+    return symptomRecords.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentDietRecords: () => {
+    const { dietRecords, currentMemberId } = get()
+    return dietRecords.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentExerciseRecords: () => {
+    const { exerciseRecords, currentMemberId } = get()
+    return exerciseRecords.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentMedications: () => {
+    const { medications, currentMemberId } = get()
+    return medications.filter((m) => m.memberId === currentMemberId)
+  },
+
+  currentReminders: () => {
+    const { reminders, currentMemberId } = get()
+    return reminders.filter((r) => r.memberId === currentMemberId)
+  },
+
+  currentFollowups: () => {
+    const { followups, currentMemberId } = get()
+    return followups.filter((f) => f.memberId === currentMemberId)
+  },
+
+  currentWeeklyReports: () => {
+    const { weeklyReports, currentMemberId } = get()
+    return weeklyReports.filter((w) => w.memberId === currentMemberId)
+  },
+
+  currentDoctorAdvices: () => {
+    const { doctorAdvices, currentMemberId } = get()
+    return doctorAdvices.filter((d) => d.memberId === currentMemberId)
+  },
+
   addBloodPressure: (record) => {
     const newRecord: BloodPressureRecord = {
       ...record,
-      id: `bp_${Date.now()}`
+      id: `bp_${Date.now()}`,
+      memberId: get().currentMemberId
     }
     set((state) => ({
       bloodPressureRecords: [newRecord, ...state.bloodPressureRecords]
@@ -87,7 +160,8 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   addBloodSugar: (record) => {
     const newRecord: BloodSugarRecord = {
       ...record,
-      id: `bs_${Date.now()}`
+      id: `bs_${Date.now()}`,
+      memberId: get().currentMemberId
     }
     set((state) => ({
       bloodSugarRecords: [newRecord, ...state.bloodSugarRecords]
@@ -98,7 +172,8 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   addSymptom: (record) => {
     const newRecord: SymptomRecord = {
       ...record,
-      id: `sym_${Date.now()}`
+      id: `sym_${Date.now()}`,
+      memberId: get().currentMemberId
     }
     set((state) => ({
       symptomRecords: [newRecord, ...state.symptomRecords]
@@ -109,7 +184,8 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   addDiet: (record) => {
     const newRecord: DietRecord = {
       ...record,
-      id: `diet_${Date.now()}`
+      id: `diet_${Date.now()}`,
+      memberId: get().currentMemberId
     }
     set((state) => ({
       dietRecords: [newRecord, ...state.dietRecords]
@@ -120,12 +196,54 @@ export const useHealthStore = create<HealthState>((set, get) => ({
   addExercise: (record) => {
     const newRecord: ExerciseRecord = {
       ...record,
-      id: `ex_${Date.now()}`
+      id: `ex_${Date.now()}`,
+      memberId: get().currentMemberId
     }
     set((state) => ({
       exerciseRecords: [newRecord, ...state.exerciseRecords]
     }))
     console.log('[HealthStore] 新增运动记录', newRecord)
+  },
+
+  addReminder: (record) => {
+    const newRecord: Reminder = {
+      ...record,
+      id: `rem_${Date.now()}`,
+      memberId: get().currentMemberId
+    }
+    set((state) => ({
+      reminders: [...state.reminders, newRecord].sort((a, b) => a.time.localeCompare(b.time))
+    }))
+    console.log('[HealthStore] 新增提醒', newRecord)
+  },
+
+  addMedication: (record) => {
+    const newRecord: Medication = {
+      ...record,
+      id: `med_${Date.now()}`,
+      memberId: get().currentMemberId
+    }
+    set((state) => ({
+      medications: [...state.medications, newRecord]
+    }))
+    console.log('[HealthStore] 新增用药', newRecord)
+  },
+
+  submitFollowup: (id, answers) => {
+    set((state) => ({
+      followups: state.followups.map((f) =>
+        f.id === id
+          ? {
+              ...f,
+              status: 'completed',
+              completedDate: new Date().toISOString().split('T')[0],
+              answers
+            }
+          : f
+      )
+    }))
+    const followup = get().followups.find((f) => f.id === id)
+    console.log('[HealthStore] 提交随访问卷', id, followup?.status)
   },
 
   toggleReminder: (id) => {
@@ -138,9 +256,22 @@ export const useHealthStore = create<HealthState>((set, get) => ({
     console.log('[HealthStore] 切换提醒状态', id, reminder?.completed)
   },
 
-  setCurrentMember: (id) => {
-    set({ currentMemberId: id })
-    console.log('[HealthStore] 切换当前成员', id)
+  toggleMedicationReminder: (id) => {
+    set((state) => ({
+      medications: state.medications.map((m) =>
+        m.id === id ? { ...m, reminder: !m.reminder } : m
+      )
+    }))
+    const med = get().medications.find((m) => m.id === id)
+    console.log('[HealthStore] 切换用药提醒开关', id, med?.reminder)
+  },
+
+  deleteMedication: (id) => {
+    set((state) => ({
+      medications: state.medications.filter((m) => m.id !== id),
+      reminders: state.reminders.filter((r) => r.relatedId !== id)
+    }))
+    console.log('[HealthStore] 删除用药', id)
   },
 
   deleteBloodPressure: (id) => {
@@ -148,5 +279,69 @@ export const useHealthStore = create<HealthState>((set, get) => ({
       bloodPressureRecords: state.bloodPressureRecords.filter((r) => r.id !== id)
     }))
     console.log('[HealthStore] 删除血压记录', id)
+  },
+
+  deleteBloodSugar: (id) => {
+    set((state) => ({
+      bloodSugarRecords: state.bloodSugarRecords.filter((r) => r.id !== id)
+    }))
+    console.log('[HealthStore] 删除血糖记录', id)
+  },
+
+  getHealthOverview: () => {
+    const {
+      currentBloodPressureRecords,
+      currentBloodSugarRecords,
+      currentSymptomRecords,
+      currentDietRecords,
+      currentExerciseRecords,
+      currentReminders,
+      currentMedications,
+      currentDoctorAdvices
+    } = get()
+
+    const bpRecords = currentBloodPressureRecords()
+    const bsRecords = currentBloodSugarRecords()
+    const symRecords = currentSymptomRecords()
+    const dietRecords = currentDietRecords()
+    const exRecords = currentExerciseRecords()
+    const reminderList = currentReminders()
+    const meds = currentMedications()
+    const advices = currentDoctorAdvices()
+
+    const today = new Date().toISOString().split('T')[0]
+    const isToday = (time: string) => time.startsWith(today)
+
+    const todayRecords = [
+      ...bpRecords.filter((r) => isToday(r.time)),
+      ...bsRecords.filter((r) => isToday(r.time)),
+      ...symRecords.filter((r) => isToday(r.time)),
+      ...dietRecords.filter((r) => isToday(r.time)),
+      ...exRecords.filter((r) => isToday(r.time))
+    ].length
+
+    const pendingReminders = reminderList.filter((r) => isToday(r.time) && !r.completed).length
+
+    const abnormalCount = [
+      ...bpRecords.filter((r) => r.status !== 'normal'),
+      ...bsRecords.filter((r) => r.status !== 'normal')
+    ].length
+
+    const nextVisit = advices.find((a) => a.nextVisit)?.nextVisit
+
+    const todayMedReminders = reminderList.filter(
+      (r) => r.type === 'medication' && isToday(r.time)
+    )
+    const medicationTaken = todayMedReminders.filter((r) => r.completed).length
+    const medicationTotal = todayMedReminders.length || meds.reduce((sum, m) => sum + m.times.length, 0)
+
+    return {
+      todayRecords,
+      pendingReminders,
+      abnormalCount,
+      nextVisit,
+      medicationTaken,
+      medicationTotal
+    }
   }
 }))

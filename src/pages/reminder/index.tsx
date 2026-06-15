@@ -5,7 +5,7 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useHealthStore } from '@/store/healthStore'
 import ReminderItem from '@/components/ReminderItem'
-import { isToday, isTomorrow, formatDate, formatTime } from '@/utils/dateUtils'
+import { isToday, isTomorrow } from '@/utils/dateUtils'
 import type { ReminderType } from '@/types'
 
 const tabs = [
@@ -22,7 +22,7 @@ const typeOptions = [
 ]
 
 const ReminderPage: React.FC = () => {
-  const { reminders, medications, toggleReminder } = useHealthStore()
+  const { currentReminders, currentMedications, toggleReminder, addReminder } = useHealthStore()
   const [activeTab, setActiveTab] = useState('today')
   const [showAdd, setShowAdd] = useState(false)
   const [newReminder, setNewReminder] = useState({
@@ -32,21 +32,25 @@ const ReminderPage: React.FC = () => {
     note: ''
   })
 
+  const reminders = currentReminders()
+  const medications = currentMedications()
+
   const filteredReminders = useMemo(() => {
-    const now = new Date()
-    return reminders.filter((r) => {
-      const reminderDate = new Date(r.time)
-      switch (activeTab) {
-        case 'today':
-          return isToday(r.time)
-        case 'tomorrow':
-          return isTomorrow(r.time)
-        case 'upcoming':
-          return reminderDate > now && !isToday(r.time) && !isTomorrow(r.time)
-        default:
-          return true
-      }
-    }).sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
+    let result: typeof reminders = []
+    switch (activeTab) {
+      case 'today':
+        result = reminders.filter((r) => isToday(r.time))
+        break
+      case 'tomorrow':
+        result = reminders.filter((r) => isTomorrow(r.time))
+        break
+      case 'upcoming':
+        result = reminders.filter((r) => !isToday(r.time) && !isTomorrow(r.time))
+        break
+      default:
+        result = reminders
+    }
+    return result.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime())
   }, [reminders, activeTab])
 
   const handleToggleReminder = (id: string) => {
@@ -64,8 +68,9 @@ const ReminderPage: React.FC = () => {
       Taro.showToast({ title: '请填写完整信息', icon: 'none' })
       return
     }
-    console.log('[ReminderPage] 新增提醒', newReminder)
-    Taro.showToast({ title: '提醒已添加', icon: 'success' })
+    const { type, title, time, note } = newReminder
+    addReminder({ type, title, time, completed: false, note })
+    Taro.showToast({ title: '添加成功', icon: 'success' })
     setShowAdd(false)
     setNewReminder({ type: 'medication', title: '', time: '', note: '' })
   }
@@ -89,7 +94,7 @@ const ReminderPage: React.FC = () => {
           <Text className={styles.sectionCount}>{medications.length} 种药物</Text>
         </View>
         <View className={styles.medicationsCard}>
-          {medications.map((med, index) => (
+          {medications.map((med) => (
             <View key={med.id} className={styles.medicationItem}>
               <View className={styles.medicationHeader}>
                 <Text className={styles.medicationName}>{med.name}</Text>

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { View, Text, ScrollView, Switch } from '@tarojs/components'
+import { View, Text, ScrollView, Switch, Input, Textarea } from '@tarojs/components'
 import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
@@ -14,11 +14,27 @@ interface TakenState {
 }
 
 const MedicationPage: React.FC = () => {
-  const { medications, reminders } = useHealthStore()
+  const {
+    currentMedications,
+    currentReminders,
+    toggleMedicationReminder,
+    deleteMedication,
+    addReminder,
+    addMedication
+  } = useHealthStore()
+
   const [takenState, setTakenState] = useState<TakenState>({})
   const [reminderEnabled, setReminderEnabled] = useState(true)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [newMedName, setNewMedName] = useState('')
+  const [newMedDosage, setNewMedDosage] = useState('')
+  const [newMedTimes, setNewMedTimes] = useState('')
+  const [newMedNote, setNewMedNote] = useState('')
 
-  const { totalToday, takenToday } = useMemo(() => {
+  const medications = useMemo(() => currentMedications(), [currentMedications])
+  const reminders = useMemo(() => currentReminders(), [currentReminders])
+
+  const { totalToday, takenToday, pendingReminders } = useMemo(() => {
     let total = 0
     let taken = 0
     medications.forEach((med) => {
@@ -30,8 +46,13 @@ const MedicationPage: React.FC = () => {
         }
       })
     })
-    return { totalToday: total, takenToday: taken }
-  }, [medications, takenState])
+    const today = new Date().toISOString().split('T')[0]
+    const isToday = (time: string) => time.startsWith(today)
+    const pending = reminders.filter(
+      (r) => r.type === 'medication' && isToday(r.time) && !r.completed
+    ).length
+    return { totalToday: total, takenToday: taken, pendingReminders: pending }
+  }, [medications, reminders, takenState])
 
   const progressPercent = totalToday > 0 ? Math.round((takenToday / totalToday) * 100) : 0
 
@@ -52,7 +73,7 @@ const MedicationPage: React.FC = () => {
   }
 
   const handleToggleReminder = (med: Medication) => {
-    console.log('[MedicationPage] 切换用药提醒', med.id, !med.reminder)
+    toggleMedicationReminder(med.id)
     Taro.showToast({
       title: med.reminder ? '已关闭提醒' : '已开启提醒',
       icon: 'success',
@@ -69,12 +90,77 @@ const MedicationPage: React.FC = () => {
     })
   }
 
+  const resetAddForm = () => {
+    setNewMedName('')
+    setNewMedDosage('')
+    setNewMedTimes('')
+    setNewMedNote('')
+  }
+
   const handleAddMedication = () => {
+    setShowAddModal(true)
+  }
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false)
+    resetAddForm()
+  }
+
+  const handleSubmitAddMedication = () => {
+    if (!newMedName.trim()) {
+      Taro.showToast({
+        title: '请输入药品名称',
+        icon: 'none',
+        duration: 1500
+      })
+      return
+    }
+    if (!newMedDosage.trim()) {
+      Taro.showToast({
+        title: '请输入剂量',
+        icon: 'none',
+        duration: 1500
+      })
+      return
+    }
+    const timesArray = newMedTimes
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => t.length > 0)
+
+    const newMedId = `med_${Date.now()}`
+
+    addMedication({
+      name: newMedName.trim(),
+      dosage: newMedDosage.trim(),
+      times: timesArray,
+      reminder: true,
+      startDate: new Date().toISOString().split('T')[0],
+      note: newMedNote.trim() || undefined
+    })
+
+    if (timesArray.length > 0) {
+      const today = new Date().toISOString().split('T')[0]
+      timesArray.forEach((time) => {
+        addReminder({
+          type: 'medication',
+          title: `服药提醒：${newMedName.trim()}`,
+          time: `${today} ${time}`,
+          completed: false,
+          relatedId: newMedId,
+          note: `剂量：${newMedDosage.trim()}`
+        })
+      })
+    }
+
     Taro.showToast({
-      title: '功能开发中',
-      icon: 'none',
+      title: '添加成功',
+      icon: 'success',
       duration: 1500
     })
+
+    setShowAddModal(false)
+    resetAddForm()
   }
 
   const handleEdit = (med: Medication) => {
@@ -89,14 +175,14 @@ const MedicationPage: React.FC = () => {
   const handleDelete = (med: Medication) => {
     Taro.showModal({
       title: '删除用药',
-      content: `确定要删除"${med.name}"吗？删除后将无法恢复。`,
+      content: `确定要删除"${med.name}"吗？删除后将无法恢复，相关提醒也会一并删除。`,
       confirmText: '删除',
       confirmColor: '#ef4444',
       cancelText: '取消'
     })
       .then((res) => {
         if (res.confirm) {
-          console.log('[MedicationPage] 删除用药', med.id)
+          deleteMedication(med.id)
           Taro.showToast({
             title: '已删除',
             icon: 'success',
@@ -117,6 +203,7 @@ const MedicationPage: React.FC = () => {
   }
 
   return (
+    <>
     <ScrollView className={styles.page} scrollY>
       <View className={styles.header}>
         <Text className={styles.headerTitle}>用药计划</Text>
@@ -134,6 +221,7 @@ const MedicationPage: React.FC = () => {
         <View className={styles.progressDetail}>
           <Text>已服 {takenToday} 次</Text>
           <Text>完成度 {progressPercent}%</Text>
+          <Text>待提醒 {pendingReminders} 次</Text>
         </View>
       </View>
 
@@ -248,6 +336,73 @@ const MedicationPage: React.FC = () => {
         <Text className={styles.addBtnIcon}>+</Text>
       </View>
     </ScrollView>
+
+    {showAddModal && (
+      <View className={styles.modalMask} onClick={handleCloseAddModal}>
+        <View className={styles.modalContainer} onClick={(e) => e.stopPropagation()}>
+          <View className={styles.modalHeader}>
+            <Text className={styles.modalTitle}>添加新药</Text>
+            <View className={styles.modalClose} onClick={handleCloseAddModal}>
+              <Text>✕</Text>
+            </View>
+          </View>
+
+          <ScrollView className={styles.modalBody} scrollY>
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>药品名称 *</Text>
+              <Input
+                className={styles.formInput}
+                placeholder='例如：阿莫西林胶囊'
+                value={newMedName}
+                onInput={(e) => setNewMedName(e.detail.value)}
+              />
+            </View>
+
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>剂量 *</Text>
+              <Input
+                className={styles.formInput}
+                placeholder='例如：每次1粒，每日3次'
+                value={newMedDosage}
+                onInput={(e) => setNewMedDosage(e.detail.value)}
+              />
+            </View>
+
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>服用时间（逗号分隔）</Text>
+              <Input
+                className={styles.formInput}
+                placeholder='例如：08:00,12:00,20:00'
+                value={newMedTimes}
+                onInput={(e) => setNewMedTimes(e.detail.value)}
+              />
+              <Text className={styles.formHint}>多个时间请用英文逗号分隔，留空则为按需服用</Text>
+            </View>
+
+            <View className={styles.formItem}>
+              <Text className={styles.formLabel}>备注</Text>
+              <Textarea
+                className={styles.formTextarea}
+                placeholder='例如：饭后服用，避免空腹'
+                value={newMedNote}
+                onInput={(e) => setNewMedNote(e.detail.value)}
+                maxlength={200}
+              />
+            </View>
+          </ScrollView>
+
+          <View className={styles.modalFooter}>
+            <View className={styles.modalCancelBtn} onClick={handleCloseAddModal}>
+              <Text>取消</Text>
+            </View>
+            <View className={styles.modalConfirmBtn} onClick={handleSubmitAddMedication}>
+              <Text>确认添加</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    )}
+    </>
   )
 }
 

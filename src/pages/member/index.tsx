@@ -5,7 +5,6 @@ import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useHealthStore } from '@/store/healthStore'
 import RecordItem from '@/components/RecordItem'
-import { formatDate } from '@/utils/dateUtils'
 import { calculateAverage } from '@/utils/healthUtils'
 import type { FamilyRole, BloodPressureRecord, BloodSugarRecord, SymptomRecord } from '@/types'
 
@@ -23,9 +22,9 @@ const MemberDetailPage: React.FC = () => {
 
   const {
     familyMembers,
-    bloodPressureRecords,
-    bloodSugarRecords,
-    symptomRecords
+    currentBloodPressureRecords,
+    currentBloodSugarRecords,
+    currentSymptomRecords
   } = useHealthStore()
 
   const member = useMemo(
@@ -33,47 +32,40 @@ const MemberDetailPage: React.FC = () => {
     [familyMembers, memberId]
   )
 
-  const memberBPRecords = useMemo(
-    () => bloodPressureRecords.slice(0, 7),
-    [bloodPressureRecords]
-  )
-
-  const memberBSRecords = useMemo(
-    () => bloodSugarRecords.slice(0, 7),
-    [bloodSugarRecords]
-  )
-
   const healthStats = useMemo(() => {
-    const bpAvg = memberBPRecords.length > 0 ? {
-      systolic: Math.round(calculateAverage(memberBPRecords.map((r) => r.systolic))),
-      diastolic: Math.round(calculateAverage(memberBPRecords.map((r) => r.diastolic)))
+    const bpRecords = currentBloodPressureRecords().slice(0, 7)
+    const bsRecords = currentBloodSugarRecords().slice(0, 7)
+
+    const bpAvg = bpRecords.length > 0 ? {
+      systolic: Math.round(calculateAverage(bpRecords.map((r) => r.systolic))),
+      diastolic: Math.round(calculateAverage(bpRecords.map((r) => r.diastolic)))
     } : null
 
-    const bsAvg = memberBSRecords.length > 0
-      ? calculateAverage(memberBSRecords.map((r) => r.value)).toFixed(1)
+    const bsAvg = bsRecords.length > 0
+      ? calculateAverage(bsRecords.map((r) => r.value)).toFixed(1)
       : null
 
     const abnormalCount = [
-      ...memberBPRecords.filter((r) => r.status !== 'normal'),
-      ...memberBSRecords.filter((r) => r.status !== 'normal')
+      ...bpRecords.filter((r) => r.status !== 'normal'),
+      ...bsRecords.filter((r) => r.status !== 'normal')
     ].length
 
     return { bpAvg, bsAvg, abnormalCount }
-  }, [memberBPRecords, memberBSRecords])
+  }, [currentBloodPressureRecords, currentBloodSugarRecords])
 
   const latestBP = useMemo(
-    () => bloodPressureRecords[0] as BloodPressureRecord | undefined,
-    [bloodPressureRecords]
+    () => currentBloodPressureRecords()[0] as BloodPressureRecord | undefined,
+    [currentBloodPressureRecords]
   )
 
   const latestBS = useMemo(
-    () => bloodSugarRecords[0] as BloodSugarRecord | undefined,
-    [bloodSugarRecords]
+    () => currentBloodSugarRecords()[0] as BloodSugarRecord | undefined,
+    [currentBloodSugarRecords]
   )
 
   const latestSymptom = useMemo(
-    () => symptomRecords[0] as SymptomRecord | undefined,
-    [symptomRecords]
+    () => currentSymptomRecords()[0] as SymptomRecord | undefined,
+    [currentSymptomRecords]
   )
 
   const handleCall = () => {

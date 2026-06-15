@@ -3,6 +3,7 @@ import type { FollowupRecord } from '@/types'
 export const mockFollowups: FollowupRecord[] = [
   {
     id: 'f1',
+    memberId: 'm1',
     title: '6月月度随访问卷',
     date: '2026-06-16',
     status: 'pending',
@@ -51,6 +52,7 @@ export const mockFollowups: FollowupRecord[] = [
   },
   {
     id: 'f2',
+    memberId: 'm1',
     title: '5月月度随访问卷',
     date: '2026-05-15',
     status: 'completed',
@@ -94,6 +96,7 @@ export const mockFollowups: FollowupRecord[] = [
   },
   {
     id: 'f3',
+    memberId: 'm1',
     title: '4月月度随访问卷',
     date: '2026-04-15',
     status: 'completed',
@@ -126,5 +129,59 @@ export const mockFollowups: FollowupRecord[] = [
       q3: '完全按照医嘱服药'
     },
     doctorAdvice: '各项指标控制良好，继续保持。建议适度增加运动，每周运动3-5次，每次30分钟。'
+  },
+  {
+    id: 'f4',
+    memberId: 'm2',
+    title: '6月糖尿病随访',
+    date: '2026-06-17',
+    status: 'pending',
+    questions: [
+      {
+        id: 'q1',
+        question: '近一周血糖控制情况？',
+        type: 'single',
+        options: ['很好都正常', '偶尔偏高', '经常偏高', '不清楚'],
+        required: true
+      },
+      {
+        id: 'q2',
+        question: '是否出现低血糖症状？',
+        type: 'single',
+        options: ['从未', '偶尔', '经常'],
+        required: true
+      },
+      {
+        id: 'q3',
+        question: '每日运动时长（分钟）？',
+        type: 'number',
+        required: false
+      },
+      {
+        id: 'q4',
+        question: '其他需要说明的情况？',
+        type: 'text',
+        required: false
+      }
+    ]
+  },
+  {
+    id: 'f5',
+    memberId: 'm2',
+    title: '5月糖尿病随访',
+    date: '2026-05-17',
+    status: 'completed',
+    completedDate: '2026-05-18',
+    questions: [
+      {
+        id: 'q1',
+        question: '近一周血糖控制情况？',
+        type: 'single',
+        options: ['很好都正常', '偶尔偏高', '经常偏高', '不清楚'],
+        required: true
+      }
+    ],
+    answers: { q1: '偶尔偏高' },
+    doctorAdvice: '血糖偶尔偏高，建议控制饮食，尤其是碳水摄入。'
   }
 ]

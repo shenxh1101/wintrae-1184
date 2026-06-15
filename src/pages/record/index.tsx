@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react'
 import { View, Text, Input, Textarea, ScrollView } from '@tarojs/components'
-import Taro from '@tarojs/taro'
+import Taro, { useRouter } from '@tarojs/taro'
 import classnames from 'classnames'
 import styles from './index.module.scss'
 import { useHealthStore } from '@/store/healthStore'
@@ -32,12 +32,13 @@ const sugarPeriods = [
 ]
 
 const RecordPage: React.FC = () => {
+  const router = useRouter()
   const {
-    bloodPressureRecords,
-    bloodSugarRecords,
-    symptomRecords,
-    dietRecords,
-    exerciseRecords,
+    currentBloodPressureRecords,
+    currentBloodSugarRecords,
+    currentSymptomRecords,
+    currentDietRecords,
+    currentExerciseRecords,
     addBloodPressure,
     addBloodSugar,
     addSymptom,
@@ -45,7 +46,9 @@ const RecordPage: React.FC = () => {
     addExercise
   } = useHealthStore()
 
-  const [activeTab, setActiveTab] = useState<RecordType>('bloodPressure')
+  const [activeTab, setActiveTab] = useState<RecordType>(
+    (router.params.tab as RecordType) || 'bloodPressure'
+  )
   const [showInput, setShowInput] = useState(false)
 
   const [systolic, setSystolic] = useState('')
@@ -64,14 +67,14 @@ const RecordPage: React.FC = () => {
 
   const currentRecords = useMemo(() => {
     switch (activeTab) {
-      case 'bloodPressure': return bloodPressureRecords
-      case 'bloodSugar': return bloodSugarRecords
-      case 'symptom': return symptomRecords
-      case 'diet': return dietRecords
-      case 'exercise': return exerciseRecords
+      case 'bloodPressure': return currentBloodPressureRecords()
+      case 'bloodSugar': return currentBloodSugarRecords()
+      case 'symptom': return currentSymptomRecords()
+      case 'diet': return currentDietRecords()
+      case 'exercise': return currentExerciseRecords()
       default: return []
     }
-  }, [activeTab, bloodPressureRecords, bloodSugarRecords, symptomRecords, dietRecords, exerciseRecords])
+  }, [activeTab, currentBloodPressureRecords, currentBloodSugarRecords, currentSymptomRecords, currentDietRecords, currentExerciseRecords])
 
   const toggleSymptom = (symptom: string) => {
     setSelectedSymptoms((prev) =>

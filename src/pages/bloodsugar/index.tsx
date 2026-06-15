@@ -26,9 +26,11 @@ const periodIcons: Record<string, string> = {
 }
 
 const BloodSugarPage: React.FC = () => {
-  const { bloodSugarRecords, bloodSugarTrend } = useHealthStore()
+  const { currentBloodSugarRecords, bloodSugarTrend, addBloodSugar: _addBloodSugar, deleteBloodSugar } = useHealthStore()
 
   const [selectedPeriod, setSelectedPeriod] = useState<string>('all')
+
+  const bloodSugarRecords = useMemo(() => currentBloodSugarRecords(), [currentBloodSugarRecords])
 
   const latestRecord = useMemo(() => bloodSugarRecords[0], [bloodSugarRecords])
 
@@ -60,8 +62,30 @@ const BloodSugarPage: React.FC = () => {
   }, [bloodSugarRecords])
 
   const handleAddRecord = () => {
-    Taro.navigateTo({ url: '/pages/record/index?tab=bloodSugar' }).catch((err) => {
+    Taro.switchTab({ url: '/pages/record/index' }).catch((err) => {
       console.error('[BloodSugarPage] 跳转记录页面失败', err)
+    })
+  }
+
+  const handleDelete = (id: string, e: any) => {
+    e.stopPropagation()
+
+    Taro.showModal({
+      title: '删除记录',
+      content: '确定要删除这条血糖记录吗？删除后无法恢复。',
+      confirmText: '删除',
+      confirmColor: '#ef4444'
+    }).then((res) => {
+      if (res.confirm) {
+        deleteBloodSugar(id)
+        Taro.showToast({
+          title: '删除成功',
+          icon: 'success',
+          duration: 1500
+        })
+      }
+    }).catch((err) => {
+      console.error('[BloodSugarPage] 删除确认弹窗失败', err)
     })
   }
 
@@ -182,7 +206,7 @@ const BloodSugarPage: React.FC = () => {
 
         <View className={styles.historyCard}>
           {filteredRecords.length > 0 ? (
-            filteredRecords.map((record, index) => (
+            filteredRecords.map((record) => (
               <View
                 key={record.id}
                 className={styles.historyItem}
@@ -209,6 +233,12 @@ const BloodSugarPage: React.FC = () => {
                       {formatDate(record.time)} {formatTime(record.time)}
                     </Text>
                   </View>
+                </View>
+
+                <View
+                  className={styles.itemDelete}
+                  onClick={(e) => handleDelete(record.id, e)}>
+                  🗑️
                 </View>
               </View>
             ))

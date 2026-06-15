@@ -16,13 +16,14 @@ const HomePage: React.FC = () => {
   const {
     familyMembers,
     currentMemberId,
-    bloodPressureRecords,
-    bloodSugarRecords,
-    reminders,
+    currentBloodPressureRecords,
+    currentBloodSugarRecords,
+    currentReminders,
     bloodPressureTrend,
     bloodSugarTrend,
-    healthOverview,
-    doctorAdvices,
+    getHealthOverview,
+    currentDoctorAdvices,
+    currentMedications,
     toggleReminder,
     setCurrentMember
   } = useHealthStore()
@@ -35,29 +36,29 @@ const HomePage: React.FC = () => {
   )
 
   const todayReminders = useMemo(
-    () => reminders.filter((r) => isToday(r.time)).slice(0, 3),
-    [reminders]
+    () => currentReminders().filter((r) => isToday(r.time)).slice(0, 3),
+    []
   )
 
-  const latestBP = useMemo(() => bloodPressureRecords[0], [bloodPressureRecords])
-  const latestBS = useMemo(() => bloodSugarRecords[0], [bloodSugarRecords])
+  const latestBP = useMemo(() => currentBloodPressureRecords()[0], [])
+  const latestBS = useMemo(() => currentBloodSugarRecords()[0], [])
 
   const bpAvg = useMemo(() => {
-    const recent = bloodPressureRecords.slice(0, 7)
+    const recent = currentBloodPressureRecords().slice(0, 7)
     return {
       systolic: Math.round(calculateAverage(recent.map((r) => r.systolic))),
       diastolic: Math.round(calculateAverage(recent.map((r) => r.diastolic)))
     }
-  }, [bloodPressureRecords])
+  }, [])
 
   const bsAvg = useMemo(() => {
-    const recent = bloodSugarRecords.slice(0, 7)
+    const recent = currentBloodSugarRecords().slice(0, 7)
     return calculateAverage(recent.map((r) => r.value)).toFixed(1)
-  }, [bloodSugarRecords])
+  }, [])
 
   const nextVisit = useMemo(() => {
-    return doctorAdvices.find((d) => d.nextVisit)?.nextVisit
-  }, [doctorAdvices])
+    return currentDoctorAdvices().find((d) => d.nextVisit)?.nextVisit
+  }, [])
 
   const greeting = useMemo(() => {
     const hour = new Date().getHours()
@@ -69,6 +70,7 @@ const HomePage: React.FC = () => {
   }, [])
 
   const handleQuickAction = (action: string) => {
+    const tabBarActions = ['symptom', 'diet', 'exercise']
     const routes: Record<string, string> = {
       bloodPressure: '/pages/bloodpressure/index',
       bloodSugar: '/pages/bloodsugar/index',
@@ -93,9 +95,15 @@ const HomePage: React.FC = () => {
 
     const route = routes[action]
     if (route) {
-      Taro.navigateTo({ url: route }).catch((err) => {
-        console.error('[HomePage] 跳转失败', err)
-      })
+      if (tabBarActions.includes(action)) {
+        Taro.switchTab({ url: '/pages/record/index' }).catch((err) => {
+          console.error('[HomePage] switchTab 跳转失败', err)
+        })
+      } else {
+        Taro.navigateTo({ url: route }).catch((err) => {
+          console.error('[HomePage] navigateTo 跳转失败', err)
+        })
+      }
     }
   }
 
@@ -150,6 +158,9 @@ const HomePage: React.FC = () => {
   ]
 
   const trendData: TrendDataPoint[] = trendType === 'bp' ? bloodPressureTrend : bloodSugarTrend
+
+  const healthOverview = useMemo(() => getHealthOverview(), [])
+  const medications = useMemo(() => currentMedications(), [])
 
   const medicationProgress = healthOverview.medicationTotal > 0
     ? Math.round((healthOverview.medicationTaken / healthOverview.medicationTotal) * 100)

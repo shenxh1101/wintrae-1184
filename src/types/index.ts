@@ -8,6 +8,7 @@ export type FamilyRole = 'patient' | 'spouse' | 'child' | 'parent' | 'other'
 
 export interface BloodPressureRecord {
   id: string
+  memberId: string
   systolic: number
   diastolic: number
   heartRate?: number
@@ -18,6 +19,7 @@ export interface BloodPressureRecord {
 
 export interface BloodSugarRecord {
   id: string
+  memberId: string
   value: number
   period: 'fasting' | 'beforeMeal' | 'afterMeal' | 'beforeSleep'
   time: string
@@ -27,6 +29,7 @@ export interface BloodSugarRecord {
 
 export interface SymptomRecord {
   id: string
+  memberId: string
   symptoms: string[]
   severity: 'mild' | 'moderate' | 'severe'
   time: string
@@ -35,6 +38,7 @@ export interface SymptomRecord {
 
 export interface DietRecord {
   id: string
+  memberId: string
   mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
   content: string
   time: string
@@ -42,6 +46,7 @@ export interface DietRecord {
 
 export interface ExerciseRecord {
   id: string
+  memberId: string
   type: string
   duration: number
   intensity: 'light' | 'moderate' | 'vigorous'
@@ -51,6 +56,7 @@ export interface ExerciseRecord {
 
 export interface Medication {
   id: string
+  memberId: string
   name: string
   dosage: string
   times: string[]
@@ -62,6 +68,7 @@ export interface Medication {
 
 export interface Reminder {
   id: string
+  memberId: string
   type: ReminderType
   title: string
   time: string
@@ -80,9 +87,11 @@ export interface FollowupQuestion {
 
 export interface FollowupRecord {
   id: string
+  memberId: string
   title: string
   date: string
   status: 'pending' | 'completed' | 'expired'
+  completedDate?: string
   questions: FollowupQuestion[]
   answers?: Record<string, string | string[]>
   doctorAdvice?: string
@@ -90,6 +99,7 @@ export interface FollowupRecord {
 
 export interface WeeklyReport {
   id: string
+  memberId: string
   weekStart: string
   weekEnd: string
   bloodPressureAvg: { systolic: number; diastolic: number }
@@ -112,6 +122,7 @@ export interface FamilyMember {
 
 export interface DoctorAdvice {
   id: string
+  memberId: string
   doctorName: string
   hospital: string
   date: string
